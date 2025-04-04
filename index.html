@@ -16,6 +16,7 @@
             height: 100vh;
             margin: 0;
             background-color: #f0f0f0;
+            overflow: hidden;
         }
         
         h1 {
@@ -89,6 +90,28 @@
             border-radius: 4px;
             padding: 8px 16px;
             cursor: pointer;
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            border-radius: 0;
+            opacity: 0;
+            animation: confetti-fall 3s ease-in-out forwards;
+            z-index: 100;
+        }
+        
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-50px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
         }
 
         @media (max-width: 600px) {
@@ -407,6 +430,41 @@
                 currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
             }
             
+            function createConfetti() {
+                const colors = ['#f00', '#0f0', '#00f', '#ff0', '#0ff', '#f0f', '#fd0'];
+                const shapes = [0, '50%']; // square or circle
+                const confettiCount = 100;
+                
+                for (let i = 0; i < confettiCount; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.classList.add('confetti');
+                    
+                    // Random properties for variety
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    const shape = shapes[Math.floor(Math.random() * shapes.length)];
+                    const left = Math.random() * 100 + 'vw';
+                    const size = Math.random() * 10 + 5 + 'px';
+                    const duration = Math.random() * 2 + 2 + 's';
+                    const delay = Math.random() * 0.5 + 's';
+                    
+                    // Apply random styles
+                    confetti.style.backgroundColor = color;
+                    confetti.style.borderRadius = shape;
+                    confetti.style.left = left;
+                    confetti.style.width = size;
+                    confetti.style.height = size;
+                    confetti.style.animationDuration = duration;
+                    confetti.style.animationDelay = delay;
+                    
+                    document.body.appendChild(confetti);
+                    
+                    // Remove confetti after animation completes
+                    setTimeout(() => {
+                        document.body.removeChild(confetti);
+                    }, (parseFloat(duration) + parseFloat(delay)) * 1000);
+                }
+            }
+            
             function resultValidation() {
                 let roundWon = false;
                 let winner = null;
@@ -423,6 +481,11 @@
                 if (roundWon) {
                     // Play win sound
                     playSound(winSound);
+                    
+                    // Show celebration animation if human won
+                    if (winner === 'X') {
+                        createConfetti();
+                    }
                     
                     statusDisplay.textContent = winner === 'X' ? humanWinMessage() : computerWinMessage();
                     gameActive = false;
