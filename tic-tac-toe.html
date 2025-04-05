@@ -13,10 +13,11 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
             background-color: #f0f0f0;
-            overflow: hidden;
+            overflow-x: hidden;
+            padding: 20px;
         }
         
         h1 {
@@ -32,13 +33,14 @@
         
         .board {
             display: grid;
-            grid-template-columns: repeat(5, 100px);
+            grid-template-columns: repeat(5, 80px);
             grid-gap: 5px;
+            margin-bottom: 20px;
         }
         
         .cell {
-            width: 100px;
-            height: 100px;
+            width: 80px;
+            height: 80px;
             background: #e6e6e6;
             border: 2px solid #333;
             display: flex;
@@ -65,31 +67,101 @@
             border: 2px solid #777;
         }
         
-        .reset {
-            margin-top: 20px;
-            padding: 10px 20px;
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 500px;
+        }
+        
+        .btn {
+            padding: 10px 15px;
             font-size: 1rem;
             background: #4CAF50;
             color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
         }
         
-        .reset:hover {
+        .btn:hover {
             background: #45a049;
+            transform: translateY(-2px);
         }
-
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
         .sound-toggle {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: #4CAF50;
-            color: white;
-            border: none;
+            background: #2196F3;
+        }
+        
+        .sound-toggle:hover {
+            background: #0b7dda;
+        }
+        
+        .size-control {
+            display: flex;
+            align-items: center;
+            background: white;
             border-radius: 4px;
-            padding: 8px 16px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .size-label {
+            font-weight: bold;
+            margin-right: 15px;
+        }
+        
+        .size-btn {
+            background: #f1f1f1;
+            color: #333;
+            border: 1px solid #ddd;
+            width: 40px;
+            height: 40px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .size-btn:hover {
+            background: #e0e0e0;
+        }
+        
+        .size-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            width: 50px;
+            text-align: center;
+        }
+        
+        .win-control {
+            margin-left: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .win-label {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .win-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            width: 30px;
+            text-align: center;
         }
         
         .confetti {
@@ -123,17 +195,116 @@
                 width: 60px;
                 height: 60px;
             }
+            
+            .size-control {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .win-control {
+                margin-left: 0;
+                margin-top: 10px;
+            }
+        }
+        
+        /* Board size specific styles */
+        .board.size-3 {
+            grid-template-columns: repeat(3, 90px);
+        }
+        
+        .board.size-3 .cell {
+            width: 90px;
+            height: 90px;
+        }
+        
+        .board.size-4 {
+            grid-template-columns: repeat(4, 85px);
+        }
+        
+        .board.size-4 .cell {
+            width: 85px;
+            height: 85px;
+        }
+        
+        .board.size-5 {
+            grid-template-columns: repeat(5, 80px);
+        }
+        
+        .board.size-5 .cell {
+            width: 80px;
+            height: 80px;
+        }
+        
+        .board.size-6 {
+            grid-template-columns: repeat(6, 70px);
+        }
+        
+        .board.size-6 .cell {
+            width: 70px;
+            height: 70px;
+        }
+        
+        .board.size-7 {
+            grid-template-columns: repeat(7, 60px);
+        }
+        
+        .board.size-7 .cell {
+            width: 60px;
+            height: 60px;
+        }
+        
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: #555;
+            color: white;
+            padding: 8px 16px;
+            text-decoration: none;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            font-weight: bold;
+        }
+        
+        .back-button:hover {
+            background: #444;
+        }
+        
+        .back-button::before {
+            content: "←";
+            margin-right: 8px;
+            font-size: 1.2em;
         }
     </style>
 </head>
 <body>
-    <h1>Tic Tac Toe vs Computer (5x5)</h1>
+    <a href="index.html" class="back-button">Back to Games</a>
+    <h1>Tic Tac Toe vs Computer</h1>
+    
+    <div class="size-control">
+        <div class="size-label">Board Size:</div>
+        <button class="size-btn" id="decrease-size">-</button>
+        <div class="size-value" id="size-display">5×5</div>
+        <button class="size-btn" id="increase-size">+</button>
+        
+        <div class="win-control">
+            <div class="win-label">Win Length:</div>
+            <button class="size-btn" id="decrease-win">-</button>
+            <div class="win-value" id="win-display">4</div>
+            <button class="size-btn" id="increase-win">+</button>
+        </div>
+    </div>
+    
     <div class="status">Your turn (White)</div>
     <div class="board" id="board">
         <!-- Cells will be generated by JavaScript -->
     </div>
-    <button class="reset" id="reset">Reset Game</button>
-    <button class="sound-toggle" id="sound-toggle">Sound: ON</button>
+    
+    <div class="controls">
+        <button class="btn" id="reset">Reset Game</button>
+        <button class="btn sound-toggle" id="sound-toggle">Sound: ON</button>
+    </div>
     
     <!-- Audio elements for sounds -->
     <audio id="stone-sound" preload="auto">
@@ -163,79 +334,192 @@
             // Add listeners for both mouse and touch events
             document.addEventListener('click', unlockAudio);
             document.addEventListener('touchstart', unlockAudio);
-            const BOARD_SIZE = 5;
-            const WIN_LENGTH = 4; // Need 4 in a row to win
             
-            // Generate the board
+            // Messages
+            const humanWinMessage = () => `You won!`;
+            const computerWinMessage = () => `Computer won!`;
+            const drawMessage = () => `Game ended in a draw!`;
+            const humanTurn = () => `Your turn (White)`;
+            const computerTurn = () => `Computer's turn (Black)`;
+
+            // Board configuration
+            let BOARD_SIZE = 5;
+            let WIN_LENGTH = 4;
+            
+            // Elements
             const board = document.getElementById('board');
+            const statusDisplay = document.querySelector('.status');
+            const resetButton = document.getElementById('reset');
+            const soundToggleButton = document.getElementById('sound-toggle');
+            const sizeDisplay = document.getElementById('size-display');
+            const winDisplay = document.getElementById('win-display');
             
-            for (let i = 0; i < BOARD_SIZE * BOARD_SIZE; i++) {
-                const cell = document.createElement('div');
-                cell.classList.add('cell');
-                cell.setAttribute('data-index', i);
-                board.appendChild(cell);
-            }
+            // Size control buttons
+            const decreaseSizeBtn = document.getElementById('decrease-size');
+            const increaseSizeBtn = document.getElementById('increase-size');
+            const decreaseWinBtn = document.getElementById('decrease-win');
+            const increaseWinBtn = document.getElementById('increase-win');
             
             // Game state
             let gameActive = true;
             let currentPlayer = 'X'; // Human is X (White), Computer is O (Black)
-            let gameState = Array(BOARD_SIZE * BOARD_SIZE).fill('');
+            let gameState = [];
             let soundEnabled = true;
+            let cells = [];
+            let winningConditions = [];
             
-            // Sound elements
-            const soundToggleButton = document.getElementById('sound-toggle');
+            // Initialize the game
+            initializeGame();
             
-            // Dynamically generate winning conditions for an NxN board
-            const winningConditions = [];
-            
-            // Rows
-            for (let row = 0; row < BOARD_SIZE; row++) {
-                for (let col = 0; col <= BOARD_SIZE - WIN_LENGTH; col++) {
-                    const condition = [];
-                    for (let k = 0; k < WIN_LENGTH; k++) {
-                        condition.push(row * BOARD_SIZE + (col + k));
-                    }
-                    winningConditions.push(condition);
+            // Board size control functions
+            decreaseSizeBtn.addEventListener('click', () => {
+                if (BOARD_SIZE > 3) {
+                    BOARD_SIZE--;
+                    updateBoardSize();
                 }
+            });
+            
+            increaseSizeBtn.addEventListener('click', () => {
+                if (BOARD_SIZE < 7) {
+                    BOARD_SIZE++;
+                    updateBoardSize();
+                }
+            });
+            
+            decreaseWinBtn.addEventListener('click', () => {
+                if (WIN_LENGTH > 3) {
+                    WIN_LENGTH--;
+                    updateWinLength();
+                }
+            });
+            
+            increaseWinBtn.addEventListener('click', () => {
+                if (WIN_LENGTH < BOARD_SIZE) {
+                    WIN_LENGTH++;
+                    updateWinLength();
+                }
+            });
+            
+            function updateBoardSize() {
+                sizeDisplay.textContent = `${BOARD_SIZE}×${BOARD_SIZE}`;
+                
+                // Make sure win length is never larger than board size
+                if (WIN_LENGTH > BOARD_SIZE) {
+                    WIN_LENGTH = BOARD_SIZE;
+                    winDisplay.textContent = WIN_LENGTH;
+                }
+                
+                // Enable/disable win length buttons based on constraints
+                updateWinLengthButtons();
+                
+                // Rebuild the game with new size
+                initializeGame();
             }
             
-            // Columns
-            for (let col = 0; col < BOARD_SIZE; col++) {
+            function updateWinLength() {
+                winDisplay.textContent = WIN_LENGTH;
+                
+                // Regenerate winning conditions and reset game
+                generateWinningConditions();
+                resetGame();
+            }
+            
+            function updateWinLengthButtons() {
+                // Disable decrease button if win length is at minimum
+                decreaseWinBtn.disabled = WIN_LENGTH <= 3;
+                decreaseWinBtn.style.opacity = WIN_LENGTH <= 3 ? "0.5" : "1";
+                
+                // Disable increase button if win length is at maximum (board size)
+                increaseWinBtn.disabled = WIN_LENGTH >= BOARD_SIZE;
+                increaseWinBtn.style.opacity = WIN_LENGTH >= BOARD_SIZE ? "0.5" : "1";
+                
+                // Update display
+                winDisplay.textContent = WIN_LENGTH;
+            }
+            
+            function initializeGame() {
+                // Clear the board
+                board.innerHTML = '';
+                board.className = 'board size-' + BOARD_SIZE;
+                
+                // Update board grid template
+                board.style.gridTemplateColumns = `repeat(${BOARD_SIZE}, 1fr)`;
+                
+                // Generate cells
+                for (let i = 0; i < BOARD_SIZE * BOARD_SIZE; i++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.setAttribute('data-index', i);
+                    board.appendChild(cell);
+                }
+                
+                // Reset game state
+                gameActive = true;
+                currentPlayer = 'X';
+                gameState = Array(BOARD_SIZE * BOARD_SIZE).fill('');
+                
+                // Update cells reference
+                cells = document.querySelectorAll('.cell');
+                
+                // Add event listeners to cells
+                cells.forEach(cell => {
+                    cell.addEventListener('click', cellClicked);
+                });
+                
+                // Generate winning conditions
+                generateWinningConditions();
+                
+                // Update status text
+                statusDisplay.textContent = humanTurn();
+            }
+            
+            function generateWinningConditions() {
+                winningConditions = [];
+                
+                // Rows
+                for (let row = 0; row < BOARD_SIZE; row++) {
+                    for (let col = 0; col <= BOARD_SIZE - WIN_LENGTH; col++) {
+                        const condition = [];
+                        for (let k = 0; k < WIN_LENGTH; k++) {
+                            condition.push(row * BOARD_SIZE + (col + k));
+                        }
+                        winningConditions.push(condition);
+                    }
+                }
+                
+                // Columns
+                for (let col = 0; col < BOARD_SIZE; col++) {
+                    for (let row = 0; row <= BOARD_SIZE - WIN_LENGTH; row++) {
+                        const condition = [];
+                        for (let k = 0; k < WIN_LENGTH; k++) {
+                            condition.push((row + k) * BOARD_SIZE + col);
+                        }
+                        winningConditions.push(condition);
+                    }
+                }
+                
+                // Diagonals (top-left to bottom-right)
                 for (let row = 0; row <= BOARD_SIZE - WIN_LENGTH; row++) {
-                    const condition = [];
-                    for (let k = 0; k < WIN_LENGTH; k++) {
-                        condition.push((row + k) * BOARD_SIZE + col);
+                    for (let col = 0; col <= BOARD_SIZE - WIN_LENGTH; col++) {
+                        const condition = [];
+                        for (let k = 0; k < WIN_LENGTH; k++) {
+                            condition.push((row + k) * BOARD_SIZE + (col + k));
+                        }
+                        winningConditions.push(condition);
                     }
-                    winningConditions.push(condition);
+                }
+                
+                // Diagonals (top-right to bottom-left)
+                for (let row = 0; row <= BOARD_SIZE - WIN_LENGTH; row++) {
+                    for (let col = WIN_LENGTH - 1; col < BOARD_SIZE; col++) {
+                        const condition = [];
+                        for (let k = 0; k < WIN_LENGTH; k++) {
+                            condition.push((row + k) * BOARD_SIZE + (col - k));
+                        }
+                        winningConditions.push(condition);
+                    }
                 }
             }
-            
-            // Diagonals (top-left to bottom-right)
-            for (let row = 0; row <= BOARD_SIZE - WIN_LENGTH; row++) {
-                for (let col = 0; col <= BOARD_SIZE - WIN_LENGTH; col++) {
-                    const condition = [];
-                    for (let k = 0; k < WIN_LENGTH; k++) {
-                        condition.push((row + k) * BOARD_SIZE + (col + k));
-                    }
-                    winningConditions.push(condition);
-                }
-            }
-            
-            // Diagonals (top-right to bottom-left)
-            for (let row = 0; row <= BOARD_SIZE - WIN_LENGTH; row++) {
-                for (let col = WIN_LENGTH - 1; col < BOARD_SIZE; col++) {
-                    const condition = [];
-                    for (let k = 0; k < WIN_LENGTH; k++) {
-                        condition.push((row + k) * BOARD_SIZE + (col - k));
-                    }
-                    winningConditions.push(condition);
-                }
-            }
-            
-            // Elements
-            const statusDisplay = document.querySelector('.status');
-            const cells = document.querySelectorAll('.cell');
-            const resetButton = document.getElementById('reset');
             
             // Force audio support check
             try {
@@ -245,18 +529,7 @@
                 console.log("Audio loading failed:", e);
             }
             
-            // Messages
-            const humanWinMessage = () => `You won!`;
-            const computerWinMessage = () => `Computer won!`;
-            const drawMessage = () => `Game ended in a draw!`;
-            const humanTurn = () => `Your turn (White)`;
-            const computerTurn = () => `Computer's turn (Black)`;
-            
             // Event listeners
-            cells.forEach(cell => {
-                cell.addEventListener('click', cellClicked);
-            });
-            
             resetButton.addEventListener('click', resetGame);
             
             soundToggleButton.addEventListener('click', () => {
@@ -335,7 +608,7 @@
             }
             
             function findBestMove() {
-                // For a 5x5 board, we'll use a simpler strategy:
+                // Use a simple strategy:
                 // 1. Win if possible
                 // 2. Block human from winning if necessary
                 // 3. Take center if available
