@@ -5,71 +5,81 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hayeon's Game Archive</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&family=Playfair+Display:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600&family=Fredoka:wght@400;600&display=swap');
         
         :root {
-            --accent-color: #5e72e4;
-            --accent-light: rgba(94, 114, 228, 0.2);
-            --dark-gray: #333;
-            --medium-gray: #666;
-            --light-gray: #f4f5f7;
-            --off-white: #fafafa;
+            --primary-color: #6c5ce7;
+            --secondary-color: #81ecec;
+            --dark-color: #2d3436;
+            --light-color: #f9f9f9;
+            --medium-color: #636e72;
+            --accent-color: #00b894;
         }
         
         body {
-            font-family: 'Montserrat', sans-serif;
-            background-color: var(--off-white);
-            color: var(--dark-gray);
+            font-family: 'Quicksand', sans-serif;
+            background-color: var(--light-color);
+            color: var(--dark-color);
             margin: 0;
             padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
-            line-height: 1.6;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23dfe6e9' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            overflow-x: hidden;
         }
         
         .container {
             max-width: 900px;
             width: 90%;
             background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
             padding: 40px;
             margin-top: 30px;
             position: relative;
+            overflow: hidden;
+            z-index: 1;
         }
         
         h1 {
-            font-family: 'Playfair Display', serif;
-            color: var(--dark-gray);
+            font-family: 'Fredoka', sans-serif;
+            color: var(--dark-color);
             text-align: center;
             margin-top: 0;
-            font-size: 2.5em;
-            letter-spacing: 1px;
+            font-size: 2.8em;
             position: relative;
-            padding-bottom: 15px;
-        }
-        
-        h1::after {
-            content: "";
-            position: absolute;
-            bottom: 0;
+            display: inline-block;
             left: 50%;
             transform: translateX(-50%);
-            width: 60px;
-            height: 3px;
-            background: var(--accent-color);
+        }
+        
+        .title-container {
+            position: relative;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .title-underline {
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 8px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            border-radius: 4px;
+            z-index: -1;
         }
         
         h2 {
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 300;
-            color: var(--medium-gray);
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 400;
+            color: var(--medium-color);
             text-align: center;
-            font-size: 1.2em;
+            font-size: 1.3em;
             margin-bottom: 40px;
-            letter-spacing: 0.5px;
         }
         
         .game-list {
@@ -81,136 +91,195 @@
         
         .game-card {
             background: white;
-            border-radius: 8px;
+            border-radius: 12px;
             padding: 25px;
             text-align: center;
             transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
             position: relative;
             overflow: hidden;
             cursor: pointer;
-            border: 1px solid #eee;
-        }
-        
-        .game-card::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 5px;
-            height: 0;
-            background: var(--accent-color);
-            transition: height 0.3s ease;
+            border: 2px solid #f0f0f0;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
         }
         
         .game-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.1);
-        }
-        
-        .game-card:hover::before {
-            height: 100%;
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 15px 30px rgba(108, 92, 231, 0.15);
+            border-color: var(--primary-color);
         }
         
         .game-icon {
-            font-size: 2.5em;
+            font-size: 3em;
             margin-bottom: 15px;
-            color: var(--dark-gray);
-            transition: color 0.3s ease;
+            position: relative;
+            display: inline-block;
+            z-index: 1;
+            transition: transform 0.5s ease;
         }
         
         .game-card:hover .game-icon {
-            color: var(--accent-color);
+            transform: rotate(10deg) scale(1.2);
+            animation: wobble 1s ease;
+        }
+        
+        @keyframes wobble {
+            0%, 100% { transform: rotate(0deg) scale(1.2); }
+            25% { transform: rotate(10deg) scale(1.2); }
+            50% { transform: rotate(-8deg) scale(1.2); }
+            75% { transform: rotate(5deg) scale(1.2); }
         }
         
         .game-title {
             font-weight: 600;
-            font-size: 1.2em;
-            color: var(--dark-gray);
+            font-size: 1.3em;
+            color: var(--dark-color);
             margin-bottom: 10px;
+            position: relative;
             transition: color 0.3s ease;
         }
         
         .game-card:hover .game-title {
-            color: var(--accent-color);
+            color: var(--primary-color);
         }
         
         .game-description {
-            color: var(--medium-gray);
-            font-size: 0.9em;
+            color: var(--medium-color);
+            font-size: 0.95em;
             margin-bottom: 20px;
-            line-height: 1.5;
+            line-height: 1.6;
         }
         
         .game-link {
             display: inline-block;
-            background-color: white;
-            color: var(--dark-gray);
-            padding: 8px 18px;
-            border-radius: 4px;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
             text-decoration: none;
-            font-weight: 500;
+            font-weight: 600;
             font-size: 0.9em;
             transition: all 0.3s ease;
-            border: 1px solid #ddd;
-            letter-spacing: 0.5px;
+            border: 2px solid var(--primary-color);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .game-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 100%;
+            background-color: white;
+            transition: width 0.3s ease;
+            z-index: -1;
         }
         
         .game-link:hover {
-            background-color: var(--accent-color);
-            color: white;
-            border-color: var(--accent-color);
+            color: var(--primary-color);
+        }
+        
+        .game-link:hover::before {
+            width: 100%;
         }
         
         /* Disabled link */
         .game-link.disabled {
-            background-color: #f1f1f1;
-            color: #999;
-            border-color: #ddd;
+            background-color: #e0e0e0;
+            color: #a0a0a0;
+            border-color: #e0e0e0;
             cursor: not-allowed;
         }
         
         .game-link.disabled:hover {
-            background-color: #f1f1f1;
-            color: #999;
-            transform: none;
+            color: #a0a0a0;
+        }
+        
+        .game-link.disabled:hover::before {
+            width: 0;
         }
         
         footer {
             margin-top: 40px;
             text-align: center;
-            color: var(--medium-gray);
-            font-size: 0.8em;
-            font-weight: 300;
-            letter-spacing: 0.5px;
+            color: var(--medium-color);
+            font-size: 0.9em;
         }
         
-        /* Subtle decoration */
-        .highlight {
-            color: var(--accent-color);
-            font-weight: 600;
-        }
-        
-        .dot-pattern {
+        /* Floating elements */
+        .floating-element {
             position: absolute;
-            top: 20px;
-            right: 20px;
+            opacity: 0.5;
+            z-index: 0;
+            pointer-events: none;
+        }
+        
+        .square {
+            width: 15px;
+            height: 15px;
+            background-color: var(--primary-color);
+            opacity: 0.2;
+            border-radius: 3px;
+            animation: float 15s linear infinite;
+        }
+        
+        .circle {
+            width: 25px;
+            height: 25px;
+            background-color: var(--secondary-color);
+            opacity: 0.2;
+            border-radius: 50%;
+            animation: float 20s linear infinite;
+        }
+        
+        .triangle {
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 20px solid var(--accent-color);
+            opacity: 0.2;
+            animation: float 18s linear infinite;
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translateY(0) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-40px) rotate(180deg);
+            }
+            100% {
+                transform: translateY(-80px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        /* Decorative elements */
+        .corner-accent {
+            position: absolute;
             width: 120px;
             height: 120px;
-            background-image: radial-gradient(var(--accent-light) 1px, transparent 1px);
-            background-size: 10px 10px;
-            opacity: 0.5;
+            background: linear-gradient(135deg, var(--primary-color) 0%, rgba(129, 236, 236, 0.1) 100%);
+            opacity: 0.1;
+            border-radius: 0 0 120px 0;
+            top: 0;
+            left: 0;
             z-index: 0;
         }
         
-        .circle-accent {
+        .bg-grid {
             position: absolute;
-            bottom: -60px;
-            left: -60px;
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background: var(--accent-light);
+            bottom: 0;
+            right: 0;
+            width: 150px;
+            height: 150px;
+            background-image: linear-gradient(var(--medium-color) 1px, transparent 1px), 
+                              linear-gradient(90deg, var(--medium-color) 1px, transparent 1px);
+            background-size: 15px 15px;
+            opacity: 0.05;
             z-index: 0;
         }
         
@@ -218,7 +287,7 @@
         @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateY(30px);
             }
             to {
                 opacity: 1;
@@ -227,7 +296,7 @@
         }
         
         .fade-in {
-            animation: fadeInUp 0.6s ease forwards;
+            animation: fadeInUp 0.7s ease forwards;
             opacity: 0;
         }
         
@@ -238,15 +307,43 @@
         .delay-2 {
             animation-delay: 0.4s;
         }
+        
+        /* Highlight text */
+        .highlight {
+            color: var(--primary-color);
+            font-weight: 600;
+            position: relative;
+        }
+        
+        /* Add decorative dot */
+        .decorative-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: var(--accent-color);
+            border-radius: 50%;
+            margin: 0 5px;
+            vertical-align: middle;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="dot-pattern"></div>
-        <div class="circle-accent"></div>
+        <div class="corner-accent"></div>
+        <div class="bg-grid"></div>
         
-        <h1>Hayeon's Game Archive</h1>
-        <h2>A collection of games designed by <span class="highlight">Hayeon</span></h2>
+        <!-- Floating elements -->
+        <div class="floating-element square" style="top: 20%; left: 10%;"></div>
+        <div class="floating-element circle" style="top: 50%; right: 15%;"></div>
+        <div class="floating-element triangle" style="bottom: 30%; left: 20%;"></div>
+        <div class="floating-element square" style="bottom: 10%; right: 10%;"></div>
+        
+        <div class="title-container">
+            <h1>Hayeon's Game Archive</h1>
+            <div class="title-underline"></div>
+        </div>
+        
+        <h2>A collection of cool games by <span class="highlight">Hayeon</span> <span class="decorative-dot"></span> Made with creativity</h2>
         
         <div class="game-list">
             <div class="game-card fade-in">
@@ -271,6 +368,24 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // Create more floating elements dynamically
+            const container = document.querySelector('.container');
+            const shapes = ['square', 'circle', 'triangle'];
+            
+            for (let i = 0; i < 10; i++) {
+                const element = document.createElement('div');
+                const shape = shapes[Math.floor(Math.random() * shapes.length)];
+                element.classList.add('floating-element', shape);
+                
+                // Random positioning and animation
+                element.style.top = `${Math.random() * 100}%`;
+                element.style.left = `${Math.random() * 100}%`;
+                element.style.animationDuration = `${Math.random() * 10 + 15}s`;
+                element.style.animationDelay = `${Math.random() * 5}s`;
+                
+                container.appendChild(element);
+            }
+            
             // Add click effects on game cards
             const gameCards = document.querySelectorAll('.game-card');
             gameCards.forEach(card => {
