@@ -3,523 +3,286 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tic Tac Toe vs Computer</title>
-    <!-- Preconnect to external resource -->
-    <link rel="preconnect" href="https://assets.mixkit.co">
+    <title>Hayeon's Game Archive</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&family=Playfair+Display:wght@400;700&display=swap');
+        
+        :root {
+            --accent-color: #5e72e4;
+            --accent-light: rgba(94, 114, 228, 0.2);
+            --dark-gray: #333;
+            --medium-gray: #666;
+            --light-gray: #f4f5f7;
+            --off-white: #fafafa;
+        }
+        
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--off-white);
+            color: var(--dark-gray);
+            margin: 0;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
-            overflow: hidden;
+            min-height: 100vh;
+            line-height: 1.6;
         }
         
-        h1 {
-            color: #333;
-            margin-bottom: 20px;
-        }
-        
-        .status {
-            margin-bottom: 20px;
-            font-size: 1.2rem;
-            font-weight: bold;
-        }
-        
-        .board {
-            display: grid;
-            grid-template-columns: repeat(5, 100px);
-            grid-gap: 5px;
-        }
-        
-        .cell {
-            width: 100px;
-            height: 100px;
-            background: #e6e6e6;
-            border: 2px solid #333;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
+        .container {
+            max-width: 900px;
+            width: 90%;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            margin-top: 30px;
             position: relative;
         }
         
-        .dot {
-            border-radius: 50%;
-            width: 70%;
-            height: 70%;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        h1 {
+            font-family: 'Playfair Display', serif;
+            color: var(--dark-gray);
+            text-align: center;
+            margin-top: 0;
+            font-size: 2.5em;
+            letter-spacing: 1px;
+            position: relative;
+            padding-bottom: 15px;
         }
         
-        .white-dot {
-            background-color: white;
-            border: 2px solid #333;
+        h1::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: var(--accent-color);
         }
         
-        .black-dot {
-            background-color: black;
-            border: 2px solid #777;
+        h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 300;
+            color: var(--medium-gray);
+            text-align: center;
+            font-size: 1.2em;
+            margin-bottom: 40px;
+            letter-spacing: 0.5px;
         }
         
-        .reset {
-            margin-top: 20px;
-            padding: 10px 20px;
-            font-size: 1rem;
-            background: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
+        .game-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .game-card {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
             cursor: pointer;
+            border: 1px solid #eee;
         }
         
-        .reset:hover {
-            background: #45a049;
+        .game-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 0;
+            background: var(--accent-color);
+            transition: height 0.3s ease;
         }
-
-        .sound-toggle {
+        
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .game-card:hover::before {
+            height: 100%;
+        }
+        
+        .game-icon {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            color: var(--dark-gray);
+            transition: color 0.3s ease;
+        }
+        
+        .game-card:hover .game-icon {
+            color: var(--accent-color);
+        }
+        
+        .game-title {
+            font-weight: 600;
+            font-size: 1.2em;
+            color: var(--dark-gray);
+            margin-bottom: 10px;
+            transition: color 0.3s ease;
+        }
+        
+        .game-card:hover .game-title {
+            color: var(--accent-color);
+        }
+        
+        .game-description {
+            color: var(--medium-gray);
+            font-size: 0.9em;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        .game-link {
+            display: inline-block;
+            background-color: white;
+            color: var(--dark-gray);
+            padding: 8px 18px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            border: 1px solid #ddd;
+            letter-spacing: 0.5px;
+        }
+        
+        .game-link:hover {
+            background-color: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+        
+        /* Disabled link */
+        .game-link.disabled {
+            background-color: #f1f1f1;
+            color: #999;
+            border-color: #ddd;
+            cursor: not-allowed;
+        }
+        
+        .game-link.disabled:hover {
+            background-color: #f1f1f1;
+            color: #999;
+            transform: none;
+        }
+        
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            color: var(--medium-gray);
+            font-size: 0.8em;
+            font-weight: 300;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Subtle decoration */
+        .highlight {
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+        
+        .dot-pattern {
             position: absolute;
             top: 20px;
             right: 20px;
-            background: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 8px 16px;
-            cursor: pointer;
+            width: 120px;
+            height: 120px;
+            background-image: radial-gradient(var(--accent-light) 1px, transparent 1px);
+            background-size: 10px 10px;
+            opacity: 0.5;
+            z-index: 0;
         }
         
-        .confetti {
+        .circle-accent {
             position: absolute;
-            width: 10px;
-            height: 10px;
-            background-color: #f00;
-            border-radius: 0;
-            opacity: 0;
-            animation: confetti-fall 3s ease-in-out forwards;
-            z-index: 100;
+            bottom: -60px;
+            left: -60px;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: var(--accent-light);
+            z-index: 0;
         }
         
-        @keyframes confetti-fall {
-            0% {
-                transform: translateY(-50px) rotate(0deg);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(100vh) rotate(360deg);
+        /* Animation for cards */
+        @keyframes fadeInUp {
+            from {
                 opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
-
-        @media (max-width: 600px) {
-            .board {
-                grid-template-columns: repeat(5, 60px);
-            }
-            
-            .cell {
-                width: 60px;
-                height: 60px;
-            }
+        
+        .fade-in {
+            animation: fadeInUp 0.6s ease forwards;
+            opacity: 0;
+        }
+        
+        .delay-1 {
+            animation-delay: 0.2s;
+        }
+        
+        .delay-2 {
+            animation-delay: 0.4s;
         }
     </style>
 </head>
 <body>
-    <h1>Tic Tac Toe vs Computer (5x5)</h1>
-    <div class="status">Your turn (White)</div>
-    <div class="board" id="board">
-        <!-- Cells will be generated by JavaScript -->
+    <div class="container">
+        <div class="dot-pattern"></div>
+        <div class="circle-accent"></div>
+        
+        <h1>Hayeon's Game Archive</h1>
+        <h2>A collection of games designed by <span class="highlight">Hayeon</span></h2>
+        
+        <div class="game-list">
+            <div class="game-card fade-in">
+                <div class="game-icon">⭕❌</div>
+                <div class="game-title">Tic Tac Toe</div>
+                <div class="game-description">Challenge yourself with a strategic game of 5x5 Tic Tac Toe against the computer.</div>
+                <a href="tic-tac-toe.html" class="game-link">Play Now</a>
+            </div>
+            
+            <div class="game-card fade-in delay-1">
+                <div class="game-icon">🔜</div>
+                <div class="game-title">Coming Soon</div>
+                <div class="game-description">A new game is currently in development. Check back later for updates.</div>
+                <a href="#" class="game-link disabled">Stay Tuned</a>
+            </div>
+        </div>
     </div>
-    <button class="reset" id="reset">Reset Game</button>
-    <button class="sound-toggle" id="sound-toggle">Sound: ON</button>
     
-    <!-- Audio elements for sounds -->
-    <audio id="stone-sound" preload="auto">
-        <source src="https://assets.mixkit.co/active_storage/sfx/2606/2606-preview.mp3" type="audio/mpeg">
-    </audio>
-    <audio id="win-sound" preload="auto">
-        <source src="https://assets.mixkit.co/active_storage/sfx/1337/1337-preview.mp3" type="audio/mpeg">
-    </audio>
+    <footer>
+        &copy; 2025 Hayeon's Game Collection. All rights reserved.
+    </footer>
     
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Try to enable audio on first user interaction
-            const stoneSound = document.getElementById('stone-sound');
-            const winSound = document.getElementById('win-sound');
-            
-            // Pre-load sounds
-            function unlockAudio() {
-                // Play and immediately pause to unlock audio
-                stoneSound.load();
-                winSound.load();
-                
-                // Remove the listener once unlocked
-                document.removeEventListener('click', unlockAudio);
-                document.removeEventListener('touchstart', unlockAudio);
-            }
-            
-            // Add listeners for both mouse and touch events
-            document.addEventListener('click', unlockAudio);
-            document.addEventListener('touchstart', unlockAudio);
-            const BOARD_SIZE = 5;
-            const WIN_LENGTH = 4; // Need 4 in a row to win
-            
-            // Generate the board
-            const board = document.getElementById('board');
-            
-            for (let i = 0; i < BOARD_SIZE * BOARD_SIZE; i++) {
-                const cell = document.createElement('div');
-                cell.classList.add('cell');
-                cell.setAttribute('data-index', i);
-                board.appendChild(cell);
-            }
-            
-            // Game state
-            let gameActive = true;
-            let currentPlayer = 'X'; // Human is X (White), Computer is O (Black)
-            let gameState = Array(BOARD_SIZE * BOARD_SIZE).fill('');
-            let soundEnabled = true;
-            
-            // Sound elements
-            const soundToggleButton = document.getElementById('sound-toggle');
-            
-            // Dynamically generate winning conditions for an NxN board
-            const winningConditions = [];
-            
-            // Rows
-            for (let row = 0; row < BOARD_SIZE; row++) {
-                for (let col = 0; col <= BOARD_SIZE - WIN_LENGTH; col++) {
-                    const condition = [];
-                    for (let k = 0; k < WIN_LENGTH; k++) {
-                        condition.push(row * BOARD_SIZE + (col + k));
-                    }
-                    winningConditions.push(condition);
-                }
-            }
-            
-            // Columns
-            for (let col = 0; col < BOARD_SIZE; col++) {
-                for (let row = 0; row <= BOARD_SIZE - WIN_LENGTH; row++) {
-                    const condition = [];
-                    for (let k = 0; k < WIN_LENGTH; k++) {
-                        condition.push((row + k) * BOARD_SIZE + col);
-                    }
-                    winningConditions.push(condition);
-                }
-            }
-            
-            // Diagonals (top-left to bottom-right)
-            for (let row = 0; row <= BOARD_SIZE - WIN_LENGTH; row++) {
-                for (let col = 0; col <= BOARD_SIZE - WIN_LENGTH; col++) {
-                    const condition = [];
-                    for (let k = 0; k < WIN_LENGTH; k++) {
-                        condition.push((row + k) * BOARD_SIZE + (col + k));
-                    }
-                    winningConditions.push(condition);
-                }
-            }
-            
-            // Diagonals (top-right to bottom-left)
-            for (let row = 0; row <= BOARD_SIZE - WIN_LENGTH; row++) {
-                for (let col = WIN_LENGTH - 1; col < BOARD_SIZE; col++) {
-                    const condition = [];
-                    for (let k = 0; k < WIN_LENGTH; k++) {
-                        condition.push((row + k) * BOARD_SIZE + (col - k));
-                    }
-                    winningConditions.push(condition);
-                }
-            }
-            
-            // Elements
-            const statusDisplay = document.querySelector('.status');
-            const cells = document.querySelectorAll('.cell');
-            const resetButton = document.getElementById('reset');
-            
-            // Force audio support check
-            try {
-                stoneSound.load();
-                winSound.load();
-            } catch (e) {
-                console.log("Audio loading failed:", e);
-            }
-            
-            // Messages
-            const humanWinMessage = () => `You won!`;
-            const computerWinMessage = () => `Computer won!`;
-            const drawMessage = () => `Game ended in a draw!`;
-            const humanTurn = () => `Your turn (White)`;
-            const computerTurn = () => `Computer's turn (Black)`;
-            
-            // Event listeners
-            cells.forEach(cell => {
-                cell.addEventListener('click', cellClicked);
-            });
-            
-            resetButton.addEventListener('click', resetGame);
-            
-            soundToggleButton.addEventListener('click', () => {
-                soundEnabled = !soundEnabled;
-                soundToggleButton.textContent = `Sound: ${soundEnabled ? 'ON' : 'OFF'}`;
-            });
-            
-            // Play sound function
-            function playSound(sound) {
-                if (soundEnabled) {
-                    // Some browsers require user interaction before playing audio
-                    // Using a simpler approach that works more reliably
-                    sound.currentTime = 0;
-                    sound.volume = 0.5;
-                    
-                    // Try to play and handle errors
-                    const playPromise = sound.play();
-                    
-                    if (playPromise !== undefined) {
-                        playPromise.catch(error => {
-                            console.log("Audio play error:", error);
-                            // Most common error is user hasn't interacted with page yet
-                            if (error.name === "NotAllowedError") {
-                                // Show a message to the user
-                                statusDisplay.textContent += " (Click for sound)";
-                            }
-                        });
-                    }
-                }
-            }
-            
-            // Game functions
-            function cellClicked(clickedCellEvent) {
-                // Make sure we're clicking the cell, not a dot inside it
-                let clickedCell = clickedCellEvent.target;
-                if (!clickedCell.classList.contains('cell')) {
-                    clickedCell = clickedCell.parentElement;
-                }
-                
-                const clickedCellIndex = parseInt(clickedCell.getAttribute('data-index'));
-                
-                // Only allow clicks when it's the human's turn and the cell is empty
-                if (gameState[clickedCellIndex] !== '' || !gameActive || currentPlayer !== 'X') {
-                    return;
-                }
-                
-                // Human's move
-                cellPlayed(clickedCell, clickedCellIndex);
-                
-                // Check if the game is over after human's move
-                if (resultValidation()) {
-                    return;
-                }
-                
-                // Computer's turn
-                setTimeout(() => {
-                    if (gameActive) {
-                        statusDisplay.textContent = computerTurn();
-                        setTimeout(computerMove, 700); // Delay computer's move for better UX
-                    }
-                }, 300);
-            }
-            
-            function computerMove() {
-                if (!gameActive) return;
-                
-                // Find the best move using a simple strategy
-                const bestMove = findBestMove();
-                const cell = document.querySelector(`.cell[data-index="${bestMove}"]`);
-                
-                // Computer's move
-                cellPlayed(cell, bestMove);
-                
-                // Check if the game is over after computer's move
-                resultValidation();
-            }
-            
-            function findBestMove() {
-                // For a 5x5 board, we'll use a simpler strategy:
-                // 1. Win if possible
-                // 2. Block human from winning if necessary
-                // 3. Take center if available
-                // 4. Take a corner if available
-                // 5. Take any available spot
-                
-                // Check if computer can win in one move
-                for (let i = 0; i < gameState.length; i++) {
-                    if (gameState[i] === '') {
-                        gameState[i] = 'O';
-                        if (checkWinner('O')) {
-                            gameState[i] = '';
-                            return i;
+            // Add click effects on game cards
+            const gameCards = document.querySelectorAll('.game-card');
+            gameCards.forEach(card => {
+                card.addEventListener('click', function(e) {
+                    if (e.target.tagName !== 'A') {
+                        const link = this.querySelector('a');
+                        if (link && !link.classList.contains('disabled')) {
+                            link.click();
                         }
-                        gameState[i] = '';
-                    }
-                }
-                
-                // Check if human can win in one move and block it
-                for (let i = 0; i < gameState.length; i++) {
-                    if (gameState[i] === '') {
-                        gameState[i] = 'X';
-                        if (checkWinner('X')) {
-                            gameState[i] = '';
-                            return i;
-                        }
-                        gameState[i] = '';
-                    }
-                }
-                
-                // Take center if available
-                const centerIndex = Math.floor(gameState.length / 2);
-                if (gameState[centerIndex] === '') {
-                    return centerIndex;
-                }
-                
-                // Take a corner if available
-                const corners = [0, BOARD_SIZE - 1, BOARD_SIZE * (BOARD_SIZE - 1), BOARD_SIZE * BOARD_SIZE - 1];
-                const availableCorners = corners.filter(corner => gameState[corner] === '');
-                if (availableCorners.length > 0) {
-                    return availableCorners[Math.floor(Math.random() * availableCorners.length)];
-                }
-                
-                // Take any available spot
-                const availableSpots = gameState.map((spot, index) => spot === '' ? index : null).filter(spot => spot !== null);
-                if (availableSpots.length > 0) {
-                    return availableSpots[Math.floor(Math.random() * availableSpots.length)];
-                }
-                
-                return -1; // No available move (should not happen in normal play)
-            }
-            
-            function checkWinner(player) {
-                return winningConditions.some(condition => {
-                    return condition.every(index => gameState[index] === player);
-                });
-            }
-            
-            function cellPlayed(clickedCell, clickedCellIndex) {
-                // Clear any existing dot
-                while (clickedCell.firstChild) {
-                    clickedCell.removeChild(clickedCell.firstChild);
-                }
-                
-                // Create the dot element
-                const dot = document.createElement('div');
-                dot.classList.add('dot');
-                
-                if (currentPlayer === 'X') {
-                    // White dot for human
-                    dot.classList.add('white-dot');
-                } else {
-                    // Black dot for computer
-                    dot.classList.add('black-dot');
-                }
-                
-                // Add the dot to the cell
-                clickedCell.appendChild(dot);
-                
-                // Play stone drop sound
-                playSound(stoneSound);
-                
-                // Add a small animation for the stone placement
-                dot.style.transform = 'scale(0)';
-                setTimeout(() => {
-                    dot.style.transition = 'transform 0.2s ease-out';
-                    dot.style.transform = 'scale(1)';
-                }, 10);
-                
-                // Update the game state
-                gameState[clickedCellIndex] = currentPlayer;
-                currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
-            }
-            
-            function createConfetti() {
-                const colors = ['#f00', '#0f0', '#00f', '#ff0', '#0ff', '#f0f', '#fd0'];
-                const shapes = [0, '50%']; // square or circle
-                const confettiCount = 100;
-                
-                for (let i = 0; i < confettiCount; i++) {
-                    const confetti = document.createElement('div');
-                    confetti.classList.add('confetti');
-                    
-                    // Random properties for variety
-                    const color = colors[Math.floor(Math.random() * colors.length)];
-                    const shape = shapes[Math.floor(Math.random() * shapes.length)];
-                    const left = Math.random() * 100 + 'vw';
-                    const size = Math.random() * 10 + 5 + 'px';
-                    const duration = Math.random() * 2 + 2 + 's';
-                    const delay = Math.random() * 0.5 + 's';
-                    
-                    // Apply random styles
-                    confetti.style.backgroundColor = color;
-                    confetti.style.borderRadius = shape;
-                    confetti.style.left = left;
-                    confetti.style.width = size;
-                    confetti.style.height = size;
-                    confetti.style.animationDuration = duration;
-                    confetti.style.animationDelay = delay;
-                    
-                    document.body.appendChild(confetti);
-                    
-                    // Remove confetti after animation completes
-                    setTimeout(() => {
-                        document.body.removeChild(confetti);
-                    }, (parseFloat(duration) + parseFloat(delay)) * 1000);
-                }
-            }
-            
-            function resultValidation() {
-                let roundWon = false;
-                let winner = null;
-                
-                // Check if anyone has won
-                if (checkWinner('X')) {
-                    roundWon = true;
-                    winner = 'X';
-                } else if (checkWinner('O')) {
-                    roundWon = true;
-                    winner = 'O';
-                }
-                
-                if (roundWon) {
-                    // Play win sound
-                    playSound(winSound);
-                    
-                    // Show celebration animation if human won
-                    if (winner === 'X') {
-                        createConfetti();
-                    }
-                    
-                    statusDisplay.textContent = winner === 'X' ? humanWinMessage() : computerWinMessage();
-                    gameActive = false;
-                    return true;
-                }
-                
-                const roundDraw = !gameState.includes('');
-                if (roundDraw) {
-                    statusDisplay.textContent = drawMessage();
-                    gameActive = false;
-                    return true;
-                }
-                
-                // Update status text for the next player's turn
-                if (currentPlayer === 'X') {
-                    statusDisplay.textContent = humanTurn();
-                }
-                
-                return false;
-            }
-            
-            function resetGame() {
-                gameActive = true;
-                currentPlayer = 'X'; // Always start with human player
-                gameState = Array(BOARD_SIZE * BOARD_SIZE).fill('');
-                statusDisplay.textContent = humanTurn();
-                
-                // Clear all dots from cells
-                cells.forEach(cell => {
-                    while (cell.firstChild) {
-                        cell.removeChild(cell.firstChild);
                     }
                 });
-            }
+            });
         });
     </script>
 </body>
