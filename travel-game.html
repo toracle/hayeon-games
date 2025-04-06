@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Travel Adventure</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600&display=swap');
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #505050;
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+        
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+            perspective: 1000px;
+        }
+        
+        .location-card {
+            height: 180px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+            cursor: pointer;
+        }
+        
+        .location-card.flipped {
+            transform: rotateY(180deg);
+        }
+        
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: 15px;
+        }
+        
+        .card-front {
+            background: linear-gradient(135deg, #505050, #a0a0a0);
+            color: white;
+            text-align: center;
+        }
+        
+        .card-back {
+            background-color: white;
+            transform: rotateY(180deg);
+            text-align: center;
+            border: 2px solid #eee;
+        }
+        
+        .card-back img {
+            width: 80%;
+            height: auto;
+            object-fit: contain;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .location-name {
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        
+        .travel-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+        
+        .score-panel {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            padding: 10px 0;
+            border-top: 1px solid #eee;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
+        }
+        
+        .matches, .moves {
+            font-weight: bold;
+            color: #505050;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .restart {
+            background-color: #505050;
+            color: white;
+        }
+        
+        .back-button {
+            background-color: #eee;
+            color: #505050;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .intro-screen {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .intro-screen p {
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+        
+        .start-button {
+            background: linear-gradient(to right, #FF5252, #AB47BC);
+            color: white;
+            padding: 12px 30px;
+            font-size: 1.2rem;
+            border-radius: 30px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 82, 82, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(255, 82, 82, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 82, 82, 0);
+            }
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .matched {
+            pointer-events: none;
+        }
+        
+        .matched .card-back {
+            background-color: #f0f8ff;
+            border-color: #42A5F5;
+        }
+        
+        .game-over {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 10;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.5s;
+        }
+        
+        .game-over.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .game-over h2 {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            color: #505050;
+        }
+        
+        .game-over p {
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            color: #777;
+        }
+        
+        .fireworks {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+        
+        .travel-fact {
+            font-style: italic;
+            font-size: 0.85rem;
+            color: #777;
+            margin-top: 5px;
+        }
+        
+        @media (max-width: 600px) {
+            .game-board {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .location-card {
+                height: 150px;
+            }
+            
+            .travel-icon {
+                font-size: 2rem;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="intro-screen" id="intro-screen">
+            <h1>World Travel Adventure</h1>
+            <p>Match pairs of famous world landmarks to win the game!</p>
+            <p>Test your memory and learn about amazing places around the world.</p>
+            <button class="start-button" id="start-button">Start Adventure</button>
+        </div>
+        
+        <div class="game-container hidden" id="game-container">
+            <h1>World Travel Adventure</h1>
+            
+            <div class="score-panel">
+                <div class="matches">Matches: <span id="matches-count">0</span>/6</div>
+                <div class="moves">Moves: <span id="moves-count">0</span></div>
+            </div>
+            
+            <div class="game-board" id="game-board">
+                <!-- Cards will be generated by JavaScript -->
+            </div>
+            
+            <div class="controls">
+                <button class="restart" id="restart-button">Restart</button>
+                <a href="index.html"><button class="back-button">Main Menu</button></a>
+            </div>
+            
+            <div class="game-over" id="game-over">
+                <div class="fireworks" id="fireworks"></div>
+                <h2>Congratulations!</h2>
+                <p>You completed the travel adventure in <span id="final-moves">0</span> moves!</p>
+                <button class="restart" id="play-again-button">Play Again</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Game elements
+            const introScreen = document.getElementById('intro-screen');
+            const gameContainer = document.getElementById('game-container');
+            const gameBoard = document.getElementById('game-board');
+            const startButton = document.getElementById('start-button');
+            const restartButton = document.getElementById('restart-button');
+            const playAgainButton = document.getElementById('play-again-button');
+            const gameOverScreen = document.getElementById('game-over');
+            const matchesCount = document.getElementById('matches-count');
+            const movesCount = document.getElementById('moves-count');
+            const finalMoves = document.getElementById('final-moves');
+            const fireworksContainer = document.getElementById('fireworks');
+            
+            // Game state
+            let moves = 0;
+            let matches = 0;
+            let flippedCards = [];
+            let lockBoard = false;
+            
+            // Location data with landmarks and their facts
+            const locationData = [
+                { 
+                    name: 'Eiffel Tower',
+                    image: '🗼',
+                    fact: 'The Eiffel Tower in Paris was built in 1889 and is 324 meters tall.'
+                },
+                { 
+                    name: 'Great Wall',
+                    image: '🧱',
+                    fact: 'The Great Wall of China is over 13,000 miles long and took 2,000 years to build.'
+                },
+                { 
+                    name: 'Statue of Liberty',
+                    image: '🗽',
+                    fact: 'The Statue of Liberty was a gift from France to the United States in 1886.'
+                },
+                { 
+                    name: 'Pyramids',
+                    image: '🏜️',
+                    fact: 'The Great Pyramid of Giza is the oldest of the Seven Wonders of the Ancient World.'
+                },
+                { 
+                    name: 'Taj Mahal',
+                    image: '🕌',
+                    fact: 'The Taj Mahal in India was built as a tomb for Emperor Shah Jahan\'s wife.'
+                },
+                { 
+                    name: 'Colosseum',
+                    image: '🏛️',
+                    fact: 'The Colosseum in Rome could hold up to 80,000 spectators for gladiatorial contests.'
+                }
+            ];
+            
+            // Travel icons for card fronts
+            const travelIcons = ['🧳', '✈️', '🚆', '🚢', '🗺️', '🧭', '🏝️', '🌋', '🏔️', '🌄', '🌇', '🏙️'];
+            
+            // Start the game when the start button is clicked
+            startButton.addEventListener('click', () => {
+                introScreen.classList.add('hidden');
+                gameContainer.classList.remove('hidden');
+                initGame();
+            });
+            
+            // Restart the game when the restart button is clicked
+            restartButton.addEventListener('click', restartGame);
+            playAgainButton.addEventListener('click', restartGame);
+            
+            // Initialize the game
+            function initGame() {
+                // Reset game state
+                moves = 0;
+                matches = 0;
+                flippedCards = [];
+                lockBoard = false;
+                
+                // Update UI
+                matchesCount.textContent = '0';
+                movesCount.textContent = '0';
+                gameOverScreen.classList.remove('visible');
+                gameBoard.innerHTML = '';
+                
+                // Create location pairs and shuffle them
+                let locationPairs = [...locationData, ...locationData]
+                    .map(location => ({ ...location }));
+                shuffleArray(locationPairs);
+                
+                // Create and add cards to the game board
+                locationPairs.forEach((location, index) => {
+                    const card = createCard(location, index);
+                    gameBoard.appendChild(card);
+                });
+            }
+            
+            // Create a card element for a location
+            function createCard(location, index) {
+                const card = document.createElement('div');
+                card.classList.add('location-card');
+                card.dataset.locationName = location.name;
+                
+                // Randomly select a travel icon for the front of the card
+                const randomIconIndex = Math.floor(Math.random() * travelIcons.length);
+                const travelIcon = travelIcons[randomIconIndex];
+                
+                card.innerHTML = `
+                    <div class="card-face card-front">
+                        <div class="travel-icon">${travelIcon}</div>
+                        <div>Tap to Explore</div>
+                    </div>
+                    <div class="card-face card-back">
+                        <div class="location-icon">${location.image}</div>
+                        <div class="location-name">${location.name}</div>
+                        <div class="travel-fact">${location.fact}</div>
+                    </div>
+                `;
+                
+                card.addEventListener('click', () => flipCard(card));
+                
+                return card;
+            }
+            
+            // Handle card flipping
+            function flipCard(card) {
+                if (lockBoard) return;
+                if (card.classList.contains('flipped')) return;
+                
+                card.classList.add('flipped');
+                flippedCards.push(card);
+                
+                if (flippedCards.length === 2) {
+                    lockBoard = true;
+                    updateMoves();
+                    checkForMatch();
+                }
+            }
+            
+            // Check if the two flipped cards match
+            function checkForMatch() {
+                const [card1, card2] = flippedCards;
+                const isMatch = card1.dataset.locationName === card2.dataset.locationName;
+                
+                if (isMatch) {
+                    handleMatch(card1, card2);
+                } else {
+                    setTimeout(() => {
+                        card1.classList.remove('flipped');
+                        card2.classList.remove('flipped');
+                        resetFlippedCards();
+                    }, 1000);
+                }
+            }
+            
+            // Handle a match
+            function handleMatch(card1, card2) {
+                card1.classList.add('matched');
+                card2.classList.add('matched');
+                matches++;
+                matchesCount.textContent = matches;
+                
+                resetFlippedCards();
+                
+                if (matches === locationData.length) {
+                    setTimeout(showGameOver, 500);
+                }
+            }
+            
+            // Reset flipped cards array and unlock the board
+            function resetFlippedCards() {
+                flippedCards = [];
+                lockBoard = false;
+            }
+            
+            // Update the moves counter
+            function updateMoves() {
+                moves++;
+                movesCount.textContent = moves;
+            }
+            
+            // Show the game over screen
+            function showGameOver() {
+                finalMoves.textContent = moves;
+                gameOverScreen.classList.add('visible');
+                createFireworks();
+            }
+            
+            // Create fireworks effect for the game over screen
+            function createFireworks() {
+                fireworksContainer.innerHTML = '';
+                
+                for (let i = 0; i < 20; i++) {
+                    setTimeout(() => {
+                        const firework = document.createElement('div');
+                        firework.style.position = 'absolute';
+                        firework.style.width = '5px';
+                        firework.style.height = '5px';
+                        firework.style.borderRadius = '50%';
+                        
+                        // Random position
+                        firework.style.left = `${Math.random() * 100}%`;
+                        firework.style.top = `${Math.random() * 100}%`;
+                        
+                        // Random color
+                        const colors = ['#FF5252', '#42A5F5', '#66BB6A', '#FFD54F', '#AB47BC'];
+                        const color = colors[Math.floor(Math.random() * colors.length)];
+                        firework.style.backgroundColor = color;
+                        
+                        // Animation
+                        firework.style.animation = `
+                            firework ${Math.random() * 1 + 0.5}s ease-out forwards
+                        `;
+                        
+                        // Add firework to container
+                        fireworksContainer.appendChild(firework);
+                        
+                        // Remove after animation
+                        setTimeout(() => {
+                            fireworksContainer.removeChild(firework);
+                        }, 1500);
+                    }, i * 100);
+                }
+            }
+            
+            // Restart the game
+            function restartGame() {
+                gameOverScreen.classList.remove('visible');
+                initGame();
+            }
+            
+            // Shuffle an array (Fisher-Yates algorithm)
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+            
+            // Add CSS for fireworks animation
+            const style = document.createElement('style');
+            style.innerHTML = `
+                @keyframes firework {
+                    0% {
+                        transform: scale(0);
+                        opacity: 1;
+                    }
+                    50% {
+                        transform: scale(20);
+                        opacity: 0.5;
+                    }
+                    100% {
+                        transform: scale(40);
+                        opacity: 0;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        });
+    </script>
+</body>
+</html>
