@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uno Card Game</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;700&display=swap');
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: #d0d0d0;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #505050;
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+        
+        .intro-screen {
+            text-align: center;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .intro-screen p {
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            color: #666;
+        }
+        
+        .start-button {
+            background: linear-gradient(to right, #FF5252, #AB47BC);
+            color: white;
+            padding: 12px 30px;
+            font-size: 1.2rem;
+            border-radius: 30px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(80, 80, 80, 0.4);
+            animation: pulse 4s infinite;
+            align-self: center;
+            min-width: 180px;
+        }
+        
+        .start-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(to left, #FF5252, #AB47BC);
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 5px 15px rgba(255, 82, 82, 0.3);
+            }
+            25% {
+                box-shadow: 0 5px 15px rgba(66, 165, 245, 0.3);
+            }
+            50% {
+                box-shadow: 0 5px 15px rgba(102, 187, 106, 0.3);
+            }
+            75% {
+                box-shadow: 0 5px 15px rgba(255, 213, 79, 0.3);
+            }
+            100% {
+                box-shadow: 0 5px 15px rgba(171, 71, 188, 0.3);
+            }
+        }
+        
+        .game-container {
+            display: none;
+        }
+        
+        .game-board {
+            position: relative;
+            min-height: 500px;
+        }
+        
+        .deck {
+            width: 120px;
+            height: 180px;
+            background: linear-gradient(135deg, #222, #333, #222);
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            margin: 20px auto;
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #222;
+            overflow: hidden;
+        }
+        
+        .deck::before {
+            content: "";
+            position: absolute;
+            width: 100px;
+            height: 80px;
+            background: #e41c1c;
+            border-radius: 50% / 100% 100% 0 0;
+            top: 45px;
+            transform: rotate(-45deg);
+            z-index: 0;
+        }
+        
+        .deck::after {
+            content: "UNO";
+            color: white;
+            font-size: 2.5rem;
+            font-weight: bold;
+            font-style: italic;
+            text-shadow: 0 0 5px black;
+            transform: rotate(-45deg);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .discard-pile {
+            width: 120px;
+            height: 180px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            margin: 20px auto;
+            overflow: hidden;
+            background-color: #f8f8f8;
+            position: relative;
+            border: 2px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .discard-pile .card {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+        }
+        
+        .card-areas {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .active-area-indicator {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-color: #66BB6A;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+            z-index: 5;
+            animation: pulse 1.5s infinite alternate;
+        }
+        
+        .player-active-marker {
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .computer-active-marker {
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: translateX(-50%) scale(1);
+                box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+            }
+            100% {
+                transform: translateX(-50%) scale(1.1);
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            }
+        }
+        
+        .player-hand, .computer-hand {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .active-hand {
+            background-color: rgba(102, 187, 106, 0.15);
+            box-shadow: 0 0 15px rgba(102, 187, 106, 0.3);
+        }
+        
+        .computer-hand {
+            margin-bottom: 40px;
+        }
+        
+        .card {
+            width: 80px;
+            height: 120px;
+            border-radius: 8px;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.2s;
+            user-select: none;
+            overflow: hidden;
+            border: 2px solid white;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+        }
+        
+        .card-back {
+            background: linear-gradient(135deg, #222, #333, #222);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            transform: none !important;
+            border: 2px solid #222;
+        }
+        
+        .card-back::before {
+            content: "";
+            position: absolute;
+            width: 80%;
+            height: 50%;
+            background: #e41c1c;
+            border-radius: 50% / 100% 100% 0 0;
+            top: 25%;
+            transform: rotate(-45deg);
+            z-index: 0;
+        }
+        
+        .card-back::after {
+            content: "UNO";
+            position: relative;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: white;
+            font-style: italic;
+            text-shadow: 0 0 5px black;
+            z-index: 1;
+        }
+        
+        .card-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 2;
+        }
+        
+        .card-color {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            z-index: 2;
+        }
+        
+        .card::before {
+            content: "";
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.8;
+            z-index: 1;
+        }
+        
+        .red {
+            background-color: #E41C1C;
+            color: white;
+            background: linear-gradient(135deg, #FF3A3A, #E41C1C, #C40E0E);
+        }
+        
+        .blue {
+            background-color: #0089E3;
+            color: white;
+            background: linear-gradient(135deg, #30A3FF, #0089E3, #0070BA);
+        }
+        
+        .green {
+            background-color: #47BA35;
+            color: white;
+            background: linear-gradient(135deg, #67DE52, #47BA35, #378D29);
+        }
+        
+        .yellow {
+            background-color: #FFC001;
+            color: black;
+            background: linear-gradient(135deg, #FFCE3A, #FFC001, #D9A301);
+        }
+        
+        .black {
+            background: linear-gradient(135deg, #444, #111);
+            color: white;
+        }
+        
+        .action-card {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .action-card .card-value {
+            font-size: 2rem;
+            background-color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            position: relative;
+        }
+        
+        .player-info, .computer-info {
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .active-turn {
+            background-color: #66BB6A;
+            color: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transform: scale(1.05);
+        }
+        
+        .turn-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #66BB6A;
+            display: inline-block;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+        
+        .turn-info {
+            text-align: center;
+            font-weight: bold;
+            margin: 15px 0;
+            font-size: 1.2rem;
+            color: #505050;
+        }
+        
+        .color-selector {
+            display: none;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .color-option {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s;
+        }
+        
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+        
+        .message {
+            text-align: center;
+            margin: 15px 0;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .message.show {
+            opacity: 1;
+        }
+        
+        .success {
+            background-color: #66BB6A;
+            color: white;
+        }
+        
+        .warning {
+            background-color: #FFD54F;
+            color: black;
+        }
+        
+        .error {
+            background-color: #FF5252;
+            color: white;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .reset {
+            background: linear-gradient(to right, #FF5252, #AB47BC);
+            color: white;
+            box-shadow: 0 3px 8px rgba(80, 80, 80, 0.4);
+        }
+        
+        .reset:hover {
+            background: linear-gradient(to left, #FF5252, #AB47BC);
+        }
+        
+        .back-button {
+            background-color: #eee;
+            color: #505050;
+        }
+        
+        .pass-button {
+            background-color: #FFA726;
+            color: white;
+            box-shadow: 0 3px 8px rgba(80, 80, 80, 0.4);
+        }
+        
+        .pass-button:hover {
+            background-color: #FF9800;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .game-over {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.5s;
+        }
+        
+        .game-over.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .game-over h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #505050;
+        }
+        
+        .game-over p {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            color: #666;
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #F44336;
+            opacity: 0;
+        }
+        
+        /* 카드 애니메이션 효과 */
+        @keyframes cardDrawn {
+            0% {
+                transform: translateY(-20px) scale(1.1);
+                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            }
+            100% {
+                transform: translateY(0) scale(1);
+                box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+            }
+        }
+        
+        .card-drawing {
+            animation: cardDrawn 0.5s ease-out;
+        }
+
+        @media (max-width: 600px) {
+            .card {
+                width: 60px;
+                height: 90px;
+            }
+            
+            .card-value {
+                font-size: 1.5rem;
+            }
+            
+            .deck, .discard-pile {
+                width: 90px;
+                height: 135px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="intro-screen" id="intro-screen">
+            <h1>우노 카드 게임</h1>
+            <p>컴퓨터와 우노 게임을 하고 가장 먼저 카드를 다 내세요!</p>
+            <p>같은 색상이나 숫자를 맞추고, 특수 카드를 활용하여 게임의 흐름을 바꿔보세요!</p>
+            <button class="start-button" id="start-button">게임 시작</button>
+        </div>
+        
+        <div class="game-container" id="game-container">
+            <h1>우노 카드 게임</h1>
+            
+            <div class="game-info">
+                <div class="computer-info" id="computer-info"><span class="turn-indicator" id="computer-indicator"></span>Computer: <span id="computer-cards">7</span> cards</div>
+                <div class="player-info" id="player-info"><span class="turn-indicator" id="player-indicator"></span>You: <span id="player-cards">7</span> cards</div>
+            </div>
+            
+            <div class="turn-info" id="turn-info">Your Turn</div>
+            
+            <div class="message" id="message"></div>
+            
+            <div class="game-board" id="game-board">
+                <div class="computer-hand" id="computer-hand"></div>
+                
+                <div class="card-areas">
+                    <div class="active-area-indicator computer-active-marker" id="computer-active-marker">C</div>
+                    <div class="deck" id="deck"></div>
+                    <div class="discard-pile" id="discard-pile"></div>
+                    <div class="active-area-indicator player-active-marker" id="player-active-marker">P</div>
+                </div>
+                
+                <div class="color-selector" id="color-selector">
+                    <div class="color-option red" data-color="red"></div>
+                    <div class="color-option blue" data-color="blue"></div>
+                    <div class="color-option green" data-color="green"></div>
+                    <div class="color-option yellow" data-color="yellow"></div>
+                </div>
+                
+                <div class="player-hand" id="player-hand"></div>
+                
+                <div class="game-over" id="game-over">
+                    <h2 id="winner-message">You Win!</h2>
+                    <p id="final-message">You successfully played all your cards!</p>
+                    <button class="reset" id="play-again-button">Play Again</button>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button class="reset" id="reset-button">New Game</button>
+                <button class="pass-button" id="pass-button" style="display: none;">Pass Turn</button>
+                <a href="index.html"><button class="back-button">Main Menu</button></a>
+            </div>
+        </div>
+    </div>
+    
+    <script src="floating-elements.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 떠다니는 요소 추가
+            const containerElement = document.querySelector('.container');
+            createFloatingElements(containerElement, {
+                count: 15,
+                minSize: 10, 
+                maxSize: 25,
+                shapes: ['square', 'circle', 'star'],
+                colors: ['#E41C1C', '#0089E3', '#47BA35', '#FFC001'],
+                zIndex: -1
+            });
+            // DOM Elements
+            const introScreen = document.getElementById('intro-screen');
+            const gameContainer = document.getElementById('game-container');
+            const startButton = document.getElementById('start-button');
+            const resetButton = document.getElementById('reset-button');
+            const playAgainButton = document.getElementById('play-again-button');
+            const passButton = document.getElementById('pass-button');
+            const gameBoard = document.getElementById('game-board');
+            const deck = document.getElementById('deck');
+            const discardPile = document.getElementById('discard-pile');
+            const playerHand = document.getElementById('player-hand');
+            const computerHand = document.getElementById('computer-hand');
+            const colorSelector = document.getElementById('color-selector');
+            const messageEl = document.getElementById('message');
+            const turnInfo = document.getElementById('turn-info');
+            const gameOverScreen = document.getElementById('game-over');
+            const winnerMessage = document.getElementById('winner-message');
+            const finalMessage = document.getElementById('final-message');
+            const playerCardsCount = document.getElementById('player-cards');
+            const computerCardsCount = document.getElementById('computer-cards');
+            const playerInfo = document.getElementById('player-info');
+            const computerInfo = document.getElementById('computer-info');
+            const playerIndicator = document.getElementById('player-indicator');
+            const computerIndicator = document.getElementById('computer-indicator');
+            const playerActiveMarker = document.getElementById('player-active-marker');
+            const computerActiveMarker = document.getElementById('computer-active-marker');
+            
+            // Game state
+            let cards = [];
+            let playerCards = [];
+            let computerCards = [];
+            let currentCard = null;
+            let currentColor = null;
+            let isPlayerTurn = true;
+            let gameActive = false;
+            let skipTurn = false;
+            let drawTwoActive = false;
+            
+            // Card colors and values
+            const colors = ['red', 'blue', 'green', 'yellow'];
+            const values = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'Skip', 'Reverse', 'Draw Two'];
+            const specialCards = ['Wild', 'Wild Draw Four'];
+            
+            // Start the game
+            startButton.addEventListener('click', () => {
+                introScreen.style.display = 'none';
+                gameContainer.style.display = 'block';
+                initGame();
+            });
+            
+            // Reset or play again
+            resetButton.addEventListener('click', initGame);
+            playAgainButton.addEventListener('click', () => {
+                gameOverScreen.classList.remove('visible');
+                initGame();
+            });
+            
+            // Pass button to skip your turn after drawing
+            passButton.addEventListener('click', () => {
+                if (isPlayerTurn && gameActive) {
+                    passButton.style.display = 'none';
+                    updateMessage('warning', 'You passed your turn');
+                    endTurn();
+                }
+            });
+            
+            // Initialize the game
+            function initGame() {
+                // Reset game state
+                cards = createDeck();
+                shuffleDeck(cards);
+                playerCards = dealCards(7);
+                computerCards = dealCards(7);
+                currentCard = dealCards(1)[0];
+                
+                // Handle if first card is a special card
+                if (currentCard.value === 'Wild' || currentCard.value === 'Wild Draw Four') {
+                    currentCard.color = colors[Math.floor(Math.random() * colors.length)];
+                }
+                
+                currentColor = currentCard.color;
+                isPlayerTurn = true;
+                gameActive = true;
+                skipTurn = false;
+                drawTwoActive = false;
+                
+                // Hide pass button
+                passButton.style.display = 'none';
+                
+                // Update UI
+                renderGame();
+                updateMessage('', '');
+                turnInfo.textContent = 'Your Turn';
+                playerCardsCount.textContent = playerCards.length;
+                computerCardsCount.textContent = computerCards.length;
+                
+                // Initialize turn indicators for the first player
+                updateTurnIndicators();
+            }
+            
+            // Handle deck click event - defined as a named function so it can be removed properly
+            function handleDeckClick() {
+                if (isPlayerTurn && gameActive) {
+                    const card = drawCard('player');
+                    
+                    // Check if the card is playable
+                    const isPlayable = isValidMove(card);
+                    if (isPlayable) {
+                        updateMessage('success', 'You drew a playable card! You can play it or pass.');
+                        
+                        // Show the pass button to allow passing turn
+                        passButton.style.display = 'inline-block';
+                    } else {
+                        updateMessage('info', 'You drew a card that cannot be played');
+                    }
+                    
+                    // Re-render the game to show the new card immediately
+                    renderGame();
+                    
+                    // Add visual effect for the drawn card
+                    const newCardElement = playerHand.lastElementChild.querySelector('.card');
+                    if (newCardElement) {
+                        newCardElement.style.animation = 'cardDrawn 0.5s ease-out';
+                        
+                        // Remove animation after it completes
+                        setTimeout(() => {
+                            if (playerHand.lastElementChild && playerHand.lastElementChild.querySelector('.card')) {
+                                playerHand.lastElementChild.querySelector('.card').style.animation = '';
+                            }
+                        }, 500);
+                    }
+                    
+                    // If card is not playable, end turn automatically after a delay
+                    if (!isPlayable) {
+                        setTimeout(() => {
+                            passButton.style.display = 'none';
+                            endTurn();
+                        }, 1500);
+                    }
+                    // If card is playable, let the player decide whether to play it or pass
+                }
+            }
+            
+            // Create a complete Uno deck
+            function createDeck() {
+                const deck = [];
+                
+                // Regular cards (0-9, Skip, Reverse, Draw Two)
+                colors.forEach(color => {
+                    // One 0 card per color
+                    deck.push({ color, value: '0' });
+                    
+                    // Two of each 1-9, Skip, Reverse, Draw Two per color
+                    for (let i = 0; i < 2; i++) {
+                        for (let j = 1; j < values.length; j++) {
+                            deck.push({ color, value: values[j] });
+                        }
+                    }
+                });
+                
+                // Special cards (Wild, Wild Draw Four) - 4 of each
+                for (let i = 0; i < 4; i++) {
+                    specialCards.forEach(value => {
+                        deck.push({ color: 'black', value });
+                    });
+                }
+                
+                return deck;
+            }
+            
+            // Shuffle the deck using Fisher-Yates algorithm
+            function shuffleDeck(deck) {
+                for (let i = deck.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [deck[i], deck[j]] = [deck[j], deck[i]];
+                }
+                return deck;
+            }
+            
+            // Deal a specified number of cards from the deck
+            function dealCards(numCards) {
+                return cards.splice(0, numCards);
+            }
+            
+            // Draw a card from the deck
+            function drawCard(player) {
+                // Reshuffle if deck is empty
+                if (cards.length === 0) {
+                    // Save the top discard pile card
+                    const discardCard = currentCard;
+                    
+                    // Create an empty deck
+                    cards = [];
+                    
+                    // Game message about reshuffling
+                    updateMessage('info', 'Deck empty - reshuffling discard pile');
+                    
+                    // There are no cards to reshuffle yet, so create a new deck
+                    cards = createDeck();
+                    shuffleDeck(cards);
+                    
+                    // Keep the top discard card out of the new deck
+                    currentCard = discardCard;
+                }
+                
+                const card = cards.pop();
+                if (player === 'player') {
+                    playerCards.push(card);
+                    playerCardsCount.textContent = playerCards.length;
+                } else {
+                    computerCards.push(card);
+                    computerCardsCount.textContent = computerCards.length;
+                }
+                
+                return card;
+            }
+            
+            // Render the game state
+            function renderGame() {
+                // Render discard pile (current card)
+                discardPile.innerHTML = createCardHTML(currentCard, false, true);
+                
+                // Render player's hand
+                playerHand.innerHTML = '';
+                playerCards.forEach((card, index) => {
+                    const cardElement = document.createElement('div');
+                    cardElement.innerHTML = createCardHTML(card, false);
+                    cardElement.querySelector('.card').addEventListener('click', () => playCard(index));
+                    playerHand.appendChild(cardElement);
+                });
+                
+                // Render computer's hand
+                computerHand.innerHTML = '';
+                for (let i = 0; i < computerCards.length; i++) {
+                    const cardElement = document.createElement('div');
+                    cardElement.innerHTML = createCardHTML({ color: 'back', value: 'UNO' }, true);
+                    computerHand.appendChild(cardElement);
+                }
+                
+                // Set up deck - first remove existing event listeners to prevent duplicates
+                deck.removeEventListener('click', handleDeckClick);
+                deck.addEventListener('click', handleDeckClick);
+            }
+            
+            // Create HTML for a card
+            function createCardHTML(card, isBack, isDiscardPile = false) {
+                if (isBack) {
+                    return `<div class="card card-back"></div>`;
+                }
+                
+                let className = `card ${card.color}`;
+                let content = '';
+                
+                if (['Skip', 'Reverse', 'Draw Two', 'Wild', 'Wild Draw Four'].includes(card.value)) {
+                    className += ' action-card';
+                    
+                    // Display symbols for action cards
+                    switch(card.value) {
+                        case 'Skip': 
+                            content = '⊘';
+                            break;
+                        case 'Reverse': 
+                            content = '⟲';
+                            break;
+                        case 'Draw Two': 
+                            content = '+2';
+                            break;
+                        case 'Wild': 
+                            content = '★';
+                            break;
+                        case 'Wild Draw Four': 
+                            content = '+4';
+                            break;
+                    }
+                } else {
+                    content = card.value;
+                }
+                
+                // Add diagonal stripes to the card corners
+                const cornerAccents = card.color !== 'black' ? 
+                    `<div style="position: absolute; top: 0; left: 0; width: 20px; height: 20px; 
+                         background: white; transform: rotate(45deg) translate(-10px, -10px);"></div>
+                     <div style="position: absolute; bottom: 0; right: 0; width: 20px; height: 20px; 
+                         background: white; transform: rotate(45deg) translate(10px, 10px);"></div>` : '';
+                
+                // If this is for the discard pile, add a special class
+                if (isDiscardPile) {
+                    className += ' discard-card';
+                }
+                
+                return `
+                    <div class="${className}">
+                        ${cornerAccents}
+                        <span class="card-color">${card.color.toUpperCase()}</span>
+                        <span class="card-value">${content}</span>
+                    </div>
+                `;
+            }
+            
+            // Check if a card can be played on the current card
+            function isValidMove(card) {
+                // Wild cards can always be played
+                if (card.value === 'Wild' || card.value === 'Wild Draw Four') {
+                    return true;
+                }
+                
+                // Match color or value
+                return card.color === currentColor || card.value === currentCard.value;
+            }
+            
+            // Handle player's card play
+            function playCard(index) {
+                if (!isPlayerTurn || !gameActive) return;
+                
+                const card = playerCards[index];
+                
+                if (isValidMove(card)) {
+                    // Hide the pass button when a card is played
+                    passButton.style.display = 'none';
+                    
+                    // Remove the card from player's hand
+                    playerCards.splice(index, 1);
+                    playerCardsCount.textContent = playerCards.length;
+                    
+                    // Handle special cards
+                    handleSpecialCard(card, 'player');
+                    
+                    // Update the current card
+                    currentCard = card;
+                    currentColor = card.color;
+                    
+                    // Check if player won
+                    if (playerCards.length === 0) {
+                        gameOver('player');
+                        return;
+                    }
+                    
+                    // Only end turn if it's not a special card
+                    if (!['Wild', 'Wild Draw Four'].includes(card.value)) {
+                        endTurn();
+                    }
+                    
+                    renderGame();
+                } else {
+                    updateMessage('error', 'Invalid move! Match color or value');
+                }
+            }
+            
+            // Handle special cards
+            function handleSpecialCard(card, player) {
+                switch(card.value) {
+                    case 'Skip':
+                        skipTurn = true;
+                        updateMessage('warning', `${player === 'player' ? 'Computer' : 'You'} skip a turn!`);
+                        break;
+                    case 'Reverse':
+                        // For 2 players, Reverse acts like Skip
+                        skipTurn = true;
+                        updateMessage('warning', `${player === 'player' ? 'Computer' : 'You'} skip a turn!`);
+                        break;
+                    case 'Draw Two':
+                        drawTwoActive = true;
+                        updateMessage('warning', `${player === 'player' ? 'Computer' : 'You'} draw 2 cards!`);
+                        break;
+                    case 'Wild':
+                        if (player === 'player') {
+                            showColorSelector();
+                        } else {
+                            // Computer chooses most frequent color in its hand
+                            card.color = getOptimalColor();
+                            currentColor = card.color;
+                            updateMessage('info', `Computer chose ${card.color}`);
+                            endTurn();
+                        }
+                        break;
+                    case 'Wild Draw Four':
+                        if (player === 'player') {
+                            showColorSelector();
+                            
+                            // 컴퓨터가 카드 4장을 한 장씩 가져가기
+                            setTimeout(() => {
+                                drawCard('computer');
+                                updateMessage('warning', 'Computer drew card 1 of 4');
+                                
+                                setTimeout(() => {
+                                    drawCard('computer');
+                                    updateMessage('warning', 'Computer drew card 2 of 4');
+                                    
+                                    setTimeout(() => {
+                                        drawCard('computer');
+                                        updateMessage('warning', 'Computer drew card 3 of 4');
+                                        
+                                        setTimeout(() => {
+                                            drawCard('computer');
+                                            updateMessage('warning', 'Computer drew all 4 cards');
+                                        }, 400);
+                                    }, 400);
+                                }, 400);
+                            }, 400);
+                        } else {
+                            // Computer chooses color, player draws 4
+                            card.color = getOptimalColor();
+                            currentColor = card.color;
+                            updateMessage('warning', `Computer chose ${card.color}. You must draw 4 cards!`);
+                            
+                            // 플레이어가 카드 4장을 한 장씩 가져가기
+                            setTimeout(() => {
+                                drawCard('player');
+                                updateMessage('info', 'You drew card 1 of 4');
+                                
+                                setTimeout(() => {
+                                    drawCard('player');
+                                    updateMessage('info', 'You drew card 2 of 4');
+                                    
+                                    setTimeout(() => {
+                                        drawCard('player');
+                                        updateMessage('info', 'You drew card 3 of 4');
+                                        
+                                        setTimeout(() => {
+                                            drawCard('player');
+                                            updateMessage('info', 'You drew all 4 cards');
+                                            endTurn();
+                                        }, 400);
+                                    }, 400);
+                                }, 400);
+                            }, 400);
+                        }
+                        break;
+                }
+            }
+            
+            // Show color selector for Wild cards
+            function showColorSelector() {
+                colorSelector.style.display = 'flex';
+                
+                const colorOptions = document.querySelectorAll('.color-option');
+                colorOptions.forEach(option => {
+                    option.addEventListener('click', function() {
+                        const selectedColor = this.dataset.color;
+                        currentCard.color = selectedColor;
+                        currentColor = selectedColor;
+                        colorSelector.style.display = 'none';
+                        updateMessage('info', `You chose ${selectedColor}`);
+                        endTurn();
+                        renderGame();
+                    });
+                });
+            }
+            
+            // Computer's turn logic
+            function computerTurn() {
+                if (!gameActive) return;
+                
+                turnInfo.textContent = "Computer's Turn";
+                
+                // Handle Skip
+                if (skipTurn) {
+                    skipTurn = false;
+                    setTimeout(() => {
+                        endTurn();
+                    }, 1000);
+                    return;
+                }
+                
+                // Handle Draw Two - 한 장씩 가져오기
+                if (drawTwoActive) {
+                    drawTwoActive = false;
+                    
+                    // 첫 번째 카드 뽑기
+                    drawCard('computer');
+                    updateMessage('info', 'Computer draws first card');
+                    
+                    // 컴퓨터의 마지막 카드에 애니메이션 추가
+                    const lastComputerCard = computerHand.lastElementChild;
+                    if (lastComputerCard) {
+                        lastComputerCard.querySelector('.card').style.animation = 'cardDrawn 0.5s ease-out';
+                        setTimeout(() => {
+                            lastComputerCard.querySelector('.card').style.animation = '';
+                        }, 500);
+                    }
+                    
+                    // 잠시 후 두 번째 카드 뽑기
+                    setTimeout(() => {
+                        drawCard('computer');
+                        updateMessage('info', 'Computer draws second card');
+                        
+                        // 컴퓨터의 마지막 카드에 애니메이션 추가
+                        const lastComputerCard = computerHand.lastElementChild;
+                        if (lastComputerCard) {
+                            lastComputerCard.querySelector('.card').style.animation = 'cardDrawn 0.5s ease-out';
+                            setTimeout(() => {
+                                lastComputerCard.querySelector('.card').style.animation = '';
+                            }, 500);
+                        }
+                        
+                        // 카드 뽑기가 끝난 후 턴 종료
+                        setTimeout(() => {
+                            endTurn();
+                        }, 1000);
+                    }, 1000);
+                    
+                    return;
+                }
+                
+                // Delay to simulate thinking
+                setTimeout(() => {
+                    // Find playable cards
+                    const playableCards = computerCards.filter(card => isValidMove(card));
+                    
+                    if (playableCards.length > 0) {
+                        // Sort cards by priority (specials first, then by color)
+                        playableCards.sort((a, b) => {
+                            // Wild Draw Four has highest priority
+                            if (a.value === 'Wild Draw Four') return -1;
+                            if (b.value === 'Wild Draw Four') return 1;
+                            
+                            // Other special cards have next priority
+                            const specialValues = ['Draw Two', 'Skip', 'Reverse', 'Wild'];
+                            const aSpecialIndex = specialValues.indexOf(a.value);
+                            const bSpecialIndex = specialValues.indexOf(b.value);
+                            
+                            if (aSpecialIndex !== -1 && bSpecialIndex === -1) return -1;
+                            if (aSpecialIndex === -1 && bSpecialIndex !== -1) return 1;
+                            if (aSpecialIndex !== -1 && bSpecialIndex !== -1) return aSpecialIndex - bSpecialIndex;
+                            
+                            // Then prefer current color
+                            if (a.color === currentColor && b.color !== currentColor) return -1;
+                            if (a.color !== currentColor && b.color === currentColor) return 1;
+                            
+                            return 0;
+                        });
+                        
+                        // Play the best card
+                        const cardToPlay = playableCards[0];
+                        const cardIndex = computerCards.findIndex(card => 
+                            card.color === cardToPlay.color && card.value === cardToPlay.value);
+                        
+                        // Remove card from computer's hand
+                        computerCards.splice(cardIndex, 1);
+                        computerCardsCount.textContent = computerCards.length;
+                        
+                        // Handle special card effects
+                        handleSpecialCard(cardToPlay, 'computer');
+                        
+                        // Update game state
+                        currentCard = cardToPlay;
+                        if (cardToPlay.value !== 'Wild' && cardToPlay.value !== 'Wild Draw Four') {
+                            currentColor = cardToPlay.color;
+                        }
+                        
+                        updateMessage('info', `Computer plays ${cardToPlay.color} ${cardToPlay.value}`);
+                        
+                        // Check if computer won
+                        if (computerCards.length === 0) {
+                            gameOver('computer');
+                            return;
+                        }
+                        
+                        // Render the new game state
+                        renderGame();
+                        
+                        // End computer's turn if it's not a Wild card
+                        if (cardToPlay.value !== 'Wild' && cardToPlay.value !== 'Wild Draw Four') {
+                            endTurn();
+                        }
+                    } else {
+                        // No playable cards, draw one
+                        const drawnCard = drawCard('computer');
+                        updateMessage('info', 'Computer draws a card');
+                        
+                        // 컴퓨터의 마지막 카드에 애니메이션 추가
+                        const lastComputerCard = computerHand.lastElementChild;
+                        if (lastComputerCard) {
+                            lastComputerCard.querySelector('.card').style.animation = 'cardDrawn 0.5s ease-out';
+                            setTimeout(() => {
+                                lastComputerCard.querySelector('.card').style.animation = '';
+                            }, 500);
+                        }
+                        
+                        // Check if the drawn card can be played
+                        if (isValidMove(drawnCard)) {
+                            setTimeout(() => {
+                                // Remove the card from computer's hand
+                                const cardIndex = computerCards.findIndex(card => 
+                                    card.color === drawnCard.color && card.value === drawnCard.value);
+                                computerCards.splice(cardIndex, 1);
+                                computerCardsCount.textContent = computerCards.length;
+                                
+                                // Handle special card effects
+                                handleSpecialCard(drawnCard, 'computer');
+                                
+                                // Update game state
+                                currentCard = drawnCard;
+                                if (drawnCard.value !== 'Wild' && drawnCard.value !== 'Wild Draw Four') {
+                                    currentColor = drawnCard.color;
+                                }
+                                
+                                updateMessage('info', `Computer plays ${drawnCard.color} ${drawnCard.value}`);
+                                
+                                // Check if computer won
+                                if (computerCards.length === 0) {
+                                    gameOver('computer');
+                                    return;
+                                }
+                                
+                                // Render the new game state
+                                renderGame();
+                                
+                                // End computer's turn if it's not a Wild card
+                                if (drawnCard.value !== 'Wild' && drawnCard.value !== 'Wild Draw Four') {
+                                    endTurn();
+                                }
+                            }, 1000);
+                        } else {
+                            // Can't play the drawn card either
+                            setTimeout(() => {
+                                updateMessage('info', 'Computer passes');
+                                endTurn();
+                            }, 1000);
+                        }
+                    }
+                }, 1500);
+            }
+            
+            // Get the most frequent color in computer's hand
+            function getOptimalColor() {
+                const colorCount = {'red': 0, 'blue': 0, 'green': 0, 'yellow': 0};
+                
+                computerCards.forEach(card => {
+                    if (card.color !== 'black') {
+                        colorCount[card.color]++;
+                    }
+                });
+                
+                // Find the color with the highest count
+                let maxColor = 'red';
+                let maxCount = 0;
+                
+                for (const color in colorCount) {
+                    if (colorCount[color] > maxCount) {
+                        maxColor = color;
+                        maxCount = colorCount[color];
+                    }
+                }
+                
+                return maxColor;
+            }
+            
+            // End the current player's turn
+            function endTurn() {
+                isPlayerTurn = !isPlayerTurn;
+                turnInfo.textContent = isPlayerTurn ? 'Your Turn' : "Computer's Turn";
+                
+                // Update visual turn indicators
+                updateTurnIndicators();
+                
+                if (!isPlayerTurn) {
+                    computerTurn();
+                }
+            }
+            
+            // Update the visual turn indicators
+            function updateTurnIndicators() {
+                // Clear previous active styles
+                playerInfo.classList.remove('active-turn');
+                computerInfo.classList.remove('active-turn');
+                playerHand.classList.remove('active-hand');
+                computerHand.classList.remove('active-hand');
+                
+                // Hide both markers initially
+                playerActiveMarker.style.display = 'none';
+                computerActiveMarker.style.display = 'none';
+                
+                // Apply active style to current player
+                if (isPlayerTurn) {
+                    // Top info bar
+                    playerInfo.classList.add('active-turn');
+                    playerIndicator.style.opacity = '1';
+                    computerIndicator.style.opacity = '0.2';
+                    
+                    // Show active player marker
+                    playerActiveMarker.style.display = 'flex';
+                    
+                    // Highlight active player's hand
+                    playerHand.classList.add('active-hand');
+                } else {
+                    // Top info bar
+                    computerInfo.classList.add('active-turn');
+                    computerIndicator.style.opacity = '1';
+                    playerIndicator.style.opacity = '0.2';
+                    
+                    // Show active player marker
+                    computerActiveMarker.style.display = 'flex';
+                    
+                    // Highlight active player's hand
+                    computerHand.classList.add('active-hand');
+                }
+            }
+            
+            // Update the message area
+            function updateMessage(type, text) {
+                messageEl.textContent = text;
+                messageEl.className = `message ${type}`;
+                
+                if (text) {
+                    messageEl.classList.add('show');
+                    setTimeout(() => {
+                        messageEl.classList.remove('show');
+                    }, 3000);
+                }
+            }
+            
+            // Game over handling
+            function gameOver(winner) {
+                gameActive = false;
+                
+                if (winner === 'player') {
+                    winnerMessage.textContent = 'You Win!';
+                    finalMessage.textContent = 'You successfully played all your cards!';
+                    createConfetti();
+                } else {
+                    winnerMessage.textContent = 'Computer Wins!';
+                    finalMessage.textContent = 'The computer played all its cards first.';
+                }
+                
+                gameOverScreen.classList.add('visible');
+            }
+            
+            // Create confetti animation for winner
+            function createConfetti() {
+                const confettiCount = 150;
+                const container = document.getElementById('game-board');
+                
+                for (let i = 0; i < confettiCount; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    
+                    // Random position
+                    const startPositionX = Math.random() * 100;
+                    const startPositionY = -10;
+                    
+                    // Random colors
+                    const colors = ['#f44336', '#2196f3', '#ffeb3b', '#4caf50', '#9c27b0'];
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    
+                    // Random size
+                    const size = Math.random() * 10 + 5;
+                    
+                    // Random rotation
+                    const rotation = Math.random() * 360;
+                    
+                    // Apply styles
+                    confetti.style.left = `${startPositionX}%`;
+                    confetti.style.top = `${startPositionY}%`;
+                    confetti.style.backgroundColor = color;
+                    confetti.style.width = `${size}px`;
+                    confetti.style.height = `${size}px`;
+                    confetti.style.transform = `rotate(${rotation}deg)`;
+                    
+                    // Add to container
+                    container.appendChild(confetti);
+                    
+                    // Animate
+                    const animationDuration = Math.random() * 3 + 2;
+                    const horizontalMovement = (Math.random() - 0.5) * 50;
+                    
+                    confetti.animate([
+                        { top: `${startPositionY}%`, left: `${startPositionX}%`, opacity: 1 },
+                        { top: '100%', left: `${startPositionX + horizontalMovement}%`, opacity: 0 }
+                    ], {
+                        duration: animationDuration * 1000,
+                        easing: 'cubic-bezier(0.215, 0.61, 0.355, 1)',
+                        iterations: 1,
+                        fill: 'forwards'
+                    });
+                    
+                    // Remove after animation
+                    setTimeout(() => {
+                        container.removeChild(confetti);
+                    }, animationDuration * 1000);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
