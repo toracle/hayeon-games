@@ -15,7 +15,7 @@
         
         body {
             font-family: 'Quicksand', sans-serif;
-            background-color: #f5f5f5;
+            background-color: #d0d0d0;
             color: #333;
             line-height: 1.6;
             padding: 20px;
@@ -289,8 +289,54 @@
     <div class="container">
         <div class="intro-screen" id="intro-screen">
             <h1>Memory Game</h1>
-            <p>Match pairs of famous world landmarks to win the game!</p>
-            <p>Test your memory and learn about amazing places around the world.</p>
+            <p>Match pairs of landmarks from around the world to win the game!</p>
+            <p>Test your memory and learn about amazing places in Korea and beyond.</p>
+            
+            <div style="margin: 20px 0; text-align: left; padding: 15px; background-color: #f8f8f8; border-radius: 8px;">
+                <h3 style="margin-bottom: 10px; color: #505050;">Game Settings:</h3>
+                
+                <div style="margin-bottom: 15px;">
+                    <h4 style="margin-bottom: 5px; color: #666;">Region:</h4>
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 10px;">
+                        <label style="display: flex; align-items: center; cursor: pointer;">
+                            <input type="radio" name="region-filter" value="all" checked style="margin-right: 8px;">
+                            <span>All Landmarks</span>
+                        </label>
+                        <label style="display: flex; align-items: center; cursor: pointer;">
+                            <input type="radio" name="region-filter" value="korea" style="margin-right: 8px;">
+                            <span>Korean Only</span>
+                        </label>
+                        <label style="display: flex; align-items: center; cursor: pointer;">
+                            <input type="radio" name="region-filter" value="international" style="margin-right: 8px;">
+                            <span>International Only</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <h4 style="margin-bottom: 5px; color: #666;">Game Mode:</h4>
+                    <div style="display: flex; gap: 15px; margin-bottom: 10px;">
+                        <label style="display: flex; align-items: center; cursor: pointer;">
+                            <input type="radio" name="game-mode" value="single" checked style="margin-right: 8px;">
+                            <span>Single Player</span>
+                        </label>
+                        <label style="display: flex; align-items: center; cursor: pointer;">
+                            <input type="radio" name="game-mode" value="computer" style="margin-right: 8px;">
+                            <span>Vs. Computer</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <label for="difficulty" style="font-weight: bold;">Computer Difficulty:</label>
+                    <select id="difficulty" style="padding: 5px; border-radius: 5px; border: 1px solid #ddd;">
+                        <option value="easy">Easy</option>
+                        <option value="medium">Medium</option>
+                        <option value="hard">Hard</option>
+                    </select>
+                </div>
+            </div>
+            
             <button class="start-button" id="start-button">Start Adventure</button>
         </div>
         
@@ -300,6 +346,10 @@
             <div class="score-panel">
                 <div class="matches">Matches: <span id="matches-count">0</span>/6</div>
                 <div class="moves">Moves: <span id="moves-count">0</span></div>
+                <div class="player-score" id="player-score-container" style="display: none;">
+                    <span style="font-weight: bold;">You: </span><span id="player-score">0</span>
+                    <span style="margin-left: 10px; font-weight: bold;">Computer: </span><span id="computer-score">0</span>
+                </div>
             </div>
             
             <div class="game-board" id="game-board">
@@ -314,14 +364,31 @@
             <div class="game-over" id="game-over">
                 <div class="fireworks" id="fireworks"></div>
                 <h2>Congratulations!</h2>
-                <p>You completed the travel adventure in <span id="final-moves">0</span> moves!</p>
+                <p id="single-player-result">You completed the adventure in <span id="final-moves">0</span> moves!</p>
+                <p id="vs-computer-result" style="display: none;">
+                    Final Score: <span style="font-weight: bold;">You <span id="final-player-score">0</span></span> vs 
+                    <span style="font-weight: bold;">Computer <span id="final-computer-score">0</span></span>
+                    <br>
+                    <span id="winner-message"></span>
+                </p>
                 <button class="restart" id="play-again-button">Play Again</button>
             </div>
         </div>
     </div>
     
+    <script src="floating-elements.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // 떠다니는 요소 추가
+            const containerElement = document.querySelector('.container');
+            createFloatingElements(containerElement, {
+                count: 12,
+                minSize: 8, 
+                maxSize: 20,
+                shapes: ['circle', 'star', 'heart'],
+                colors: ['#FFD54F', '#42A5F5', '#66BB6A', '#FF5252'],
+                zIndex: -1
+            });
             // Game elements
             const introScreen = document.getElementById('intro-screen');
             const gameContainer = document.getElementById('game-container');
@@ -334,54 +401,134 @@
             const movesCount = document.getElementById('moves-count');
             const finalMoves = document.getElementById('final-moves');
             const fireworksContainer = document.getElementById('fireworks');
+            const gameModeRadios = document.querySelectorAll('input[name="game-mode"]');
+            const regionFilterRadios = document.querySelectorAll('input[name="region-filter"]');
+            const difficultySelect = document.getElementById('difficulty');
+            const playerScoreContainer = document.getElementById('player-score-container');
+            const playerScore = document.getElementById('player-score');
+            const computerScore = document.getElementById('computer-score');
+            const singlePlayerResult = document.getElementById('single-player-result');
+            const vsComputerResult = document.getElementById('vs-computer-result');
+            const finalPlayerScore = document.getElementById('final-player-score');
+            const finalComputerScore = document.getElementById('final-computer-score');
+            const winnerMessage = document.getElementById('winner-message');
             
             // Game state
             let moves = 0;
             let matches = 0;
             let flippedCards = [];
             let lockBoard = false;
+            let gameMode = 'single';
+            let difficulty = 'easy';
+            let regionFilter = 'all';
+            let playerMatches = 0;
+            let computerMatches = 0;
+            let computerMemory = {}; // To track what cards the computer has seen
+            let isPlayerTurn = true;
             
-            // Location data with landmarks and their facts
+            // Combined landmark data - Korean and international
             const locationData = [
+                // Korean Landmarks
+                { 
+                    name: 'Gyeongbokgung',
+                    image: '🏯',
+                    fact: 'Gyeongbokgung Palace in Seoul was built in 1395 and was the main royal palace of the Joseon dynasty.',
+                    region: 'Korea'
+                },
+                { 
+                    name: 'Namsan Tower',
+                    image: '🗼',
+                    fact: 'N Seoul Tower on Namsan Mountain is a communication and observation tower that offers panoramic views of Seoul.',
+                    region: 'Korea'
+                },
+                { 
+                    name: 'Jeju Island',
+                    image: '🌋',
+                    fact: 'Jeju Island is a volcanic island with Korea\'s highest mountain, Hallasan, and is known for its unique culture and natural beauty.',
+                    region: 'Korea'
+                },
+                { 
+                    name: 'Bulguksa',
+                    image: '🛕',
+                    fact: 'Bulguksa Temple in Gyeongju is a UNESCO World Heritage site and contains seven Korean National Treasures.',
+                    region: 'Korea'
+                },
+                { 
+                    name: 'Seoraksan',
+                    image: '🏔️',
+                    fact: 'Seoraksan National Park features dramatic mountain landscapes and is one of Korea\'s most beautiful natural areas.',
+                    region: 'Korea'
+                },
+                { 
+                    name: 'Changdeokgung',
+                    image: '🏯',
+                    fact: 'Changdeokgung Palace is famous for its beautiful Secret Garden and traditional Korean architecture.',
+                    region: 'Korea'
+                },
+                
+                // International Landmarks
                 { 
                     name: 'Eiffel Tower',
                     image: '🗼',
-                    fact: 'The Eiffel Tower in Paris was built in 1889 and is 324 meters tall.'
+                    fact: 'The Eiffel Tower in Paris was built in 1889 and is 324 meters tall.',
+                    region: 'France'
                 },
                 { 
                     name: 'Great Wall',
                     image: '🧱',
-                    fact: 'The Great Wall of China is over 13,000 miles long and took 2,000 years to build.'
+                    fact: 'The Great Wall of China is over 13,000 miles long and took 2,000 years to build.',
+                    region: 'China'
                 },
                 { 
                     name: 'Statue of Liberty',
                     image: '🗽',
-                    fact: 'The Statue of Liberty was a gift from France to the United States in 1886.'
+                    fact: 'The Statue of Liberty was a gift from France to the United States in 1886.',
+                    region: 'USA'
                 },
                 { 
                     name: 'Pyramids',
                     image: '🏜️',
-                    fact: 'The Great Pyramid of Giza is the oldest of the Seven Wonders of the Ancient World.'
+                    fact: 'The Great Pyramid of Giza is the oldest of the Seven Wonders of the Ancient World.',
+                    region: 'Egypt'
                 },
                 { 
                     name: 'Taj Mahal',
                     image: '🕌',
-                    fact: 'The Taj Mahal in India was built as a tomb for Emperor Shah Jahan\'s wife.'
+                    fact: 'The Taj Mahal in India was built as a tomb for Emperor Shah Jahan\'s wife.',
+                    region: 'India'
                 },
                 { 
                     name: 'Colosseum',
                     image: '🏛️',
-                    fact: 'The Colosseum in Rome could hold up to 80,000 spectators for gladiatorial contests.'
+                    fact: 'The Colosseum in Rome could hold up to 80,000 spectators for gladiatorial contests.',
+                    region: 'Italy'
                 }
             ];
             
+            // Complete landmark collection for reference
+            const allLandmarks = [...locationData];
+            
             // Travel icons for card fronts
             const travelIcons = ['🧳', '✈️', '🚆', '🚢', '🗺️', '🧭', '🏝️', '🌋', '🏔️', '🌄', '🌇', '🏙️'];
+            
+            // Get selected game mode
+            gameModeRadios.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    gameMode = e.target.value;
+                });
+            });
+            
+            // Get selected difficulty
+            difficultySelect.addEventListener('change', (e) => {
+                difficulty = e.target.value;
+            });
             
             // Start the game when the start button is clicked
             startButton.addEventListener('click', () => {
                 introScreen.classList.add('hidden');
                 gameContainer.classList.remove('hidden');
+                gameMode = document.querySelector('input[name="game-mode"]:checked').value;
+                difficulty = difficultySelect.value;
                 initGame();
             });
             
@@ -389,22 +536,73 @@
             restartButton.addEventListener('click', restartGame);
             playAgainButton.addEventListener('click', restartGame);
             
+            // Set up event listeners for option changes
+            regionFilterRadios.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    regionFilter = e.target.value;
+                });
+            });
+            
             // Initialize the game
             function initGame() {
                 // Reset game state
                 moves = 0;
                 matches = 0;
+                playerMatches = 0;
+                computerMatches = 0;
                 flippedCards = [];
                 lockBoard = false;
+                computerMemory = {};
+                isPlayerTurn = true;
+                
+                // Get current settings
+                gameMode = document.querySelector('input[name="game-mode"]:checked').value;
+                regionFilter = document.querySelector('input[name="region-filter"]:checked').value;
+                difficulty = difficultySelect.value;
                 
                 // Update UI
                 matchesCount.textContent = '0';
                 movesCount.textContent = '0';
+                playerScore.textContent = '0';
+                computerScore.textContent = '0';
                 gameOverScreen.classList.remove('visible');
                 gameBoard.innerHTML = '';
                 
+                // Show/hide player scores based on game mode
+                if (gameMode === 'computer') {
+                    playerScoreContainer.style.display = 'block';
+                    updateTurnIndicator(); // Set up initial turn indicator
+                } else {
+                    playerScoreContainer.style.display = 'none';
+                }
+                
+                // Filter landmarks based on selected region
+                let filteredLandmarks = [];
+                
+                switch(regionFilter) {
+                    case 'korea':
+                        filteredLandmarks = locationData.filter(landmark => landmark.region === 'Korea');
+                        break;
+                    case 'international':
+                        filteredLandmarks = locationData.filter(landmark => landmark.region !== 'Korea');
+                        break;
+                    default: // 'all'
+                        filteredLandmarks = locationData;
+                        // For 'all', we'll take the first 6 to maintain the same size game
+                        if (filteredLandmarks.length > 6) {
+                            // Take a balanced selection - 3 Korean, 3 international
+                            const koreanLandmarks = locationData.filter(landmark => landmark.region === 'Korea').slice(0, 3);
+                            const internationalLandmarks = locationData.filter(landmark => landmark.region !== 'Korea').slice(0, 3);
+                            filteredLandmarks = [...koreanLandmarks, ...internationalLandmarks];
+                        }
+                }
+                
+                // Update match count total
+                const totalPairs = filteredLandmarks.length;
+                matchesCount.textContent = `0/${totalPairs}`;
+                
                 // Create location pairs and shuffle them
-                let locationPairs = [...locationData, ...locationData]
+                let locationPairs = [...filteredLandmarks, ...filteredLandmarks]
                     .map(location => ({ ...location }));
                 shuffleArray(locationPairs);
                 
@@ -413,6 +611,11 @@
                     const card = createCard(location, index);
                     gameBoard.appendChild(card);
                 });
+                
+                // Clear any computer playing flags
+                document.querySelectorAll('.computer-playing').forEach(card => {
+                    card.classList.remove('computer-playing');
+                });
             }
             
             // Create a card element for a location
@@ -420,18 +623,23 @@
                 const card = document.createElement('div');
                 card.classList.add('location-card');
                 card.dataset.locationName = location.name;
+                card.dataset.region = location.region;
                 
-                // All card fronts are identical with a question mark
+                // Different card back styling based on region
+                const cardBackStyle = location.region === 'Korea' ? 
+                    'background: linear-gradient(135deg, #CD2E3A, #f8f8f8);' : 
+                    'background: linear-gradient(135deg, #42A5F5, #f8f8f8);';
                 
                 card.innerHTML = `
                     <div class="card-face card-front">
                         <div class="question-mark">?</div>
                         <div>Tap to Explore</div>
                     </div>
-                    <div class="card-face card-back">
+                    <div class="card-face card-back" style="${cardBackStyle}">
                         <div class="location-icon">${location.image}</div>
                         <div class="location-name">${location.name}</div>
                         <div class="travel-fact">${location.fact}</div>
+                        <div style="position: absolute; top: 5px; right: 5px; font-size: 0.7rem; opacity: 0.7;">${location.region}</div>
                     </div>
                 `;
                 
@@ -444,9 +652,17 @@
             function flipCard(card) {
                 if (lockBoard) return;
                 if (card.classList.contains('flipped')) return;
+                if (gameMode === 'computer' && !isPlayerTurn && !card.classList.contains('computer-playing')) return; // Only allow player to flip during their turn
                 
                 card.classList.add('flipped');
                 flippedCards.push(card);
+                
+                // Store card in computer memory (even when computer is playing)
+                const cardIndex = Array.from(gameBoard.children).indexOf(card);
+                const locationName = card.dataset.locationName;
+                
+                // Remember this card's location and content
+                computerMemory[cardIndex] = locationName;
                 
                 if (flippedCards.length === 2) {
                     lockBoard = true;
@@ -467,6 +683,18 @@
                         card1.classList.remove('flipped');
                         card2.classList.remove('flipped');
                         resetFlippedCards();
+                        
+                        // Switch turns in computer mode
+                        if (gameMode === 'computer') {
+                            isPlayerTurn = !isPlayerTurn;
+                            // Update turn indicator
+                            updateTurnIndicator();
+                            
+                            if (!isPlayerTurn) {
+                                // Computer's turn - add a delay
+                                setTimeout(computerTurn, 1000);
+                            }
+                        }
                     }, 1000);
                 }
             }
@@ -478,17 +706,316 @@
                 matches++;
                 matchesCount.textContent = matches;
                 
+                // Update player scores in vs computer mode
+                if (gameMode === 'computer') {
+                    if (isPlayerTurn) {
+                        playerMatches++;
+                        playerScore.textContent = playerMatches;
+                    } else {
+                        computerMatches++;
+                        computerScore.textContent = computerMatches;
+                    }
+                }
+                
                 resetFlippedCards();
                 
+                // Check if game is over
                 if (matches === locationData.length) {
                     setTimeout(showGameOver, 500);
+                    return;
                 }
+                
+                // Computer continues turn if it made a match
+                if (gameMode === 'computer' && !isPlayerTurn) {
+                    // Add a delay before computer takes another turn
+                    setTimeout(() => {
+                        // Update indicator to show it's still computer's turn
+                        updateTurnIndicator();
+                        setTimeout(computerTurn, 800);
+                    }, 700);
+                }
+            }
+            
+            // Computer's turn
+            function computerTurn() {
+                if (lockBoard) return;
+                
+                // The computer's move depends on difficulty
+                switch (difficulty) {
+                    case 'easy':
+                        makeEasyMove();
+                        break;
+                    case 'medium':
+                        makeMediumMove();
+                        break;
+                    case 'hard':
+                        makeHardMove();
+                        break;
+                }
+            }
+            
+            // Computer makes an easy move (mostly random)
+            function makeEasyMove() {
+                const unflippedCards = Array.from(document.querySelectorAll('.location-card:not(.flipped):not(.matched)'));
+                
+                if (unflippedCards.length === 0) return;
+                
+                // 20% chance of making a smart move if possible
+                if (Math.random() < 0.2) {
+                    const smartMove = findMatchingPair();
+                    if (smartMove) {
+                        simulateCardFlip(smartMove[0]);
+                        setTimeout(() => simulateCardFlip(smartMove[1]), 600);
+                        return;
+                    }
+                }
+                
+                // Otherwise, random moves
+                const randomCard1 = unflippedCards[Math.floor(Math.random() * unflippedCards.length)];
+                simulateCardFlip(randomCard1);
+                
+                setTimeout(() => {
+                    const remainingCards = Array.from(document.querySelectorAll('.location-card:not(.flipped):not(.matched)'));
+                    if (remainingCards.length === 0) return;
+                    
+                    const randomCard2 = remainingCards[Math.floor(Math.random() * remainingCards.length)];
+                    simulateCardFlip(randomCard2);
+                }, 600);
+            }
+            
+            // Computer makes a medium difficulty move
+            function makeMediumMove() {
+                const unflippedCards = Array.from(document.querySelectorAll('.location-card:not(.flipped):not(.matched)'));
+                
+                if (unflippedCards.length === 0) return;
+                
+                // 50% chance of making a smart move if possible
+                if (Math.random() < 0.5) {
+                    const smartMove = findMatchingPair();
+                    if (smartMove) {
+                        simulateCardFlip(smartMove[0]);
+                        setTimeout(() => simulateCardFlip(smartMove[1]), 600);
+                        return;
+                    }
+                }
+                
+                // Otherwise, random moves but try to find a card we've seen before
+                const knownCard = findKnownCard();
+                
+                if (knownCard) {
+                    simulateCardFlip(knownCard);
+                    
+                    setTimeout(() => {
+                        const matchingCard = findMatchingCardFor(knownCard.dataset.locationName);
+                        if (matchingCard) {
+                            simulateCardFlip(matchingCard);
+                        } else {
+                            // No matching card found in memory, pick random
+                            const remainingCards = Array.from(document.querySelectorAll('.location-card:not(.flipped):not(.matched)'));
+                            if (remainingCards.length === 0) return;
+                            
+                            const randomCard = remainingCards[Math.floor(Math.random() * remainingCards.length)];
+                            simulateCardFlip(randomCard);
+                        }
+                    }, 600);
+                } else {
+                    // No known cards, make random moves
+                    const randomCard1 = unflippedCards[Math.floor(Math.random() * unflippedCards.length)];
+                    simulateCardFlip(randomCard1);
+                    
+                    setTimeout(() => {
+                        const remainingCards = Array.from(document.querySelectorAll('.location-card:not(.flipped):not(.matched)'));
+                        if (remainingCards.length === 0) return;
+                        
+                        const randomCard2 = remainingCards[Math.floor(Math.random() * remainingCards.length)];
+                        simulateCardFlip(randomCard2);
+                    }, 600);
+                }
+            }
+            
+            // Computer makes a hard move (very smart)
+            function makeHardMove() {
+                const unflippedCards = Array.from(document.querySelectorAll('.location-card:not(.flipped):not(.matched)'));
+                
+                if (unflippedCards.length === 0) return;
+                
+                // 90% chance of making a smart move if possible
+                if (Math.random() < 0.9) {
+                    const smartMove = findMatchingPair();
+                    if (smartMove) {
+                        simulateCardFlip(smartMove[0]);
+                        setTimeout(() => simulateCardFlip(smartMove[1]), 600);
+                        return;
+                    }
+                }
+                
+                // Try to find a card we've seen before
+                const knownCard = findKnownCard();
+                
+                if (knownCard) {
+                    simulateCardFlip(knownCard);
+                    
+                    setTimeout(() => {
+                        const matchingCard = findMatchingCardFor(knownCard.dataset.locationName);
+                        if (matchingCard) {
+                            simulateCardFlip(matchingCard);
+                        } else {
+                            // No matching card found in memory, pick most informative card
+                            const remainingCards = Array.from(document.querySelectorAll('.location-card:not(.flipped):not(.matched)'));
+                            if (remainingCards.length === 0) return;
+                            
+                            // Pick a card we haven't seen yet
+                            const unseenCards = remainingCards.filter(card => {
+                                const index = Array.from(gameBoard.children).indexOf(card);
+                                return !computerMemory[index];
+                            });
+                            
+                            if (unseenCards.length > 0) {
+                                const randomUnseen = unseenCards[Math.floor(Math.random() * unseenCards.length)];
+                                simulateCardFlip(randomUnseen);
+                            } else {
+                                // All remaining cards are known, pick random
+                                const randomCard = remainingCards[Math.floor(Math.random() * remainingCards.length)];
+                                simulateCardFlip(randomCard);
+                            }
+                        }
+                    }, 600);
+                } else {
+                    // No known cards, make random moves
+                    const randomCard1 = unflippedCards[Math.floor(Math.random() * unflippedCards.length)];
+                    simulateCardFlip(randomCard1);
+                    
+                    setTimeout(() => {
+                        const remainingCards = Array.from(document.querySelectorAll('.location-card:not(.flipped):not(.matched)'));
+                        if (remainingCards.length === 0) return;
+                        
+                        const randomCard2 = remainingCards[Math.floor(Math.random() * remainingCards.length)];
+                        simulateCardFlip(randomCard2);
+                    }, 600);
+                }
+            }
+            
+            // Helper function to simulate the computer flipping a card
+            function simulateCardFlip(card) {
+                if (card && !card.classList.contains('flipped') && !card.classList.contains('matched')) {
+                    // Add special class to allow this card to be flipped by computer
+                    card.classList.add('computer-playing');
+                    
+                    // Highlight the card visually to show computer's choice
+                    card.style.boxShadow = '0 0 10px 2px rgba(255, 0, 0, 0.5)';
+                    
+                    // Flip the card
+                    flipCard(card);
+                    
+                    // Remove visual highlighting after a delay
+                    setTimeout(() => {
+                        card.style.boxShadow = '';
+                        card.classList.remove('computer-playing');
+                    }, 500);
+                }
+            }
+            
+            // Find a matching pair in computer memory
+            function findMatchingPair() {
+                const pairs = {};
+                
+                // Group cards by name
+                Object.entries(computerMemory).forEach(([index, name]) => {
+                    if (!pairs[name]) {
+                        pairs[name] = [];
+                    }
+                    
+                    // Check if the card is still in play (not matched)
+                    const card = gameBoard.children[index];
+                    if (!card.classList.contains('matched') && !card.classList.contains('flipped')) {
+                        pairs[name].push(card);
+                    }
+                });
+                
+                // Find a pair
+                for (const name in pairs) {
+                    if (pairs[name].length >= 2) {
+                        return [pairs[name][0], pairs[name][1]];
+                    }
+                }
+                
+                return null;
+            }
+            
+            // Find a card in computer memory
+            function findKnownCard() {
+                const unflippedIndices = [];
+                
+                // Find unflipped cards that the computer knows
+                Object.entries(computerMemory).forEach(([index, name]) => {
+                    const card = gameBoard.children[index];
+                    if (!card.classList.contains('matched') && !card.classList.contains('flipped')) {
+                        unflippedIndices.push(index);
+                    }
+                });
+                
+                if (unflippedIndices.length === 0) return null;
+                
+                // Pick a random known card
+                const randomIndex = unflippedIndices[Math.floor(Math.random() * unflippedIndices.length)];
+                return gameBoard.children[randomIndex];
+            }
+            
+            // Find a matching card for a given location name
+            function findMatchingCardFor(locationName) {
+                // Find indices of matching cards in memory
+                const matchingIndices = [];
+                
+                Object.entries(computerMemory).forEach(([index, name]) => {
+                    if (name === locationName) {
+                        const card = gameBoard.children[index];
+                        if (!card.classList.contains('matched') && !card.classList.contains('flipped')) {
+                            matchingIndices.push(index);
+                        }
+                    }
+                });
+                
+                if (matchingIndices.length === 0) return null;
+                
+                // Return a random matching card
+                const randomIndex = matchingIndices[Math.floor(Math.random() * matchingIndices.length)];
+                return gameBoard.children[randomIndex];
             }
             
             // Reset flipped cards array and unlock the board
             function resetFlippedCards() {
                 flippedCards = [];
                 lockBoard = false;
+            }
+            
+            // Add a visual indicator for current player's turn
+            function updateTurnIndicator() {
+                // Remove any existing indicators
+                document.querySelectorAll('.turn-indicator').forEach(el => el.remove());
+                
+                if (gameMode === 'computer') {
+                    // Create turn indicator
+                    const indicator = document.createElement('div');
+                    indicator.classList.add('turn-indicator');
+                    indicator.style.position = 'absolute';
+                    indicator.style.top = '0';
+                    indicator.style.right = '0';
+                    indicator.style.padding = '8px 15px';
+                    indicator.style.borderRadius = '0 0 0 8px';
+                    indicator.style.fontWeight = 'bold';
+                    
+                    if (isPlayerTurn) {
+                        indicator.textContent = 'Your Turn';
+                        indicator.style.backgroundColor = '#42A5F5';
+                        indicator.style.color = 'white';
+                    } else {
+                        indicator.textContent = 'Computer\'s Turn';
+                        indicator.style.backgroundColor = '#FF5252';
+                        indicator.style.color = 'white';
+                    }
+                    
+                    gameContainer.appendChild(indicator);
+                }
             }
             
             // Update the moves counter
@@ -499,7 +1026,49 @@
             
             // Show the game over screen
             function showGameOver() {
-                finalMoves.textContent = moves;
+                // Get region info for the message
+                let regionText = '';
+                switch(regionFilter) {
+                    case 'korea':
+                        regionText = 'Korean landmarks';
+                        break;
+                    case 'international':
+                        regionText = 'International landmarks';
+                        break;
+                    default:
+                        regionText = 'landmarks from around the world';
+                }
+                
+                // Make sure we set the text directly rather than using innerHTML
+                document.getElementById('final-moves').textContent = moves;
+                singlePlayerResult.textContent = `You completed the ${regionText} adventure in ${moves} moves!`;
+                
+                if (gameMode === 'computer') {
+                    // Show vs computer results
+                    singlePlayerResult.style.display = 'none';
+                    vsComputerResult.style.display = 'block';
+                    
+                    finalPlayerScore.textContent = playerMatches;
+                    finalComputerScore.textContent = computerMatches;
+                    
+                    // Determine winner and make sure winner message is updated
+                    let winnerText = "";
+                    if (playerMatches > computerMatches) {
+                        winnerText = "You win! 🎉";
+                    } else if (computerMatches > playerMatches) {
+                        winnerText = "Computer wins! 😢";
+                    } else {
+                        winnerText = "It's a tie! 🤝";
+                    }
+                    
+                    // Set the text content directly
+                    winnerMessage.textContent = winnerText;
+                } else {
+                    // Show single player results
+                    singlePlayerResult.style.display = 'block';
+                    vsComputerResult.style.display = 'none';
+                }
+                
                 gameOverScreen.classList.add('visible');
                 createFireworks();
             }
@@ -544,6 +1113,12 @@
             // Restart the game
             function restartGame() {
                 gameOverScreen.classList.remove('visible');
+                
+                // Keep current game settings
+                gameMode = document.querySelector('input[name="game-mode"]:checked').value;
+                regionFilter = document.querySelector('input[name="region-filter"]:checked').value;
+                difficulty = difficultySelect.value;
+                
                 initGame();
             }
             
